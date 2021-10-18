@@ -1,0 +1,70 @@
+# SPDX-FileCopyrightText: 2021 Jeff Epler
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Test leapseconddata
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+  check_suite:
+    types: [rerequested]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python-version:
+        - '3.7'
+        - '3.8'
+        - '3.9'
+        - '3.10'
+        - 'pypy-3.7'
+
+    env:
+      PYTHON: ${{ matrix.python-version }}
+
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+
+    - uses: actions/checkout@v2.2.0
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install deps
+      run: python -mpip install -r requirements-dev.txt
+
+    - name: Check stubs
+      if: (! startsWith(matrix.python-version, 'pypy-'))
+      run: mypy --strict leapseconddata.py
+
+    - name: Test
+      run: python -mcoverage run --branch -m leapseconddata && python -mcoverage report && python -mcoverage xml
+
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        env_vars: PYTHON
+        fail_ci_if_error: true
+
+  pre-commit:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+    - name: set PY
+      run: echo >>$GITHUB_ENV PY="$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')"
+    - uses: actions/cache@v1
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+    - uses: pre-commit/action@v1.1.0
