@@ -8,6 +8,7 @@
 
 import datetime
 import hashlib
+import logging
 import re
 import urllib.request
 from typing import List, Optional, NamedTuple, BinaryIO
@@ -24,6 +25,14 @@ The leap second is actually the 60th second of the previous minute"""
 LeapSecondInfo.tai.__doc__ = (
     """The new TAI-UTC offset.  Positive numbers indicate that TAI is ahead of UTC"""
 )
+
+
+class ValidityError(ValueError):
+    """The leap second information is not valid for the given timestamp"""
+
+
+class InvalidHashError(ValueError):
+    """The file hash could not be verified"""
 
 
 def _from_ntp_epoch(value: int) -> datetime.datetime:
@@ -60,9 +69,22 @@ class LeapSecondData(_LeapSecondData):
     ) -> "LeapSecondData":
         return super().__new__(cls, leap_seconds, valid_until, last_updated)
 
+    def _check_validity(self, when: Optional[datetime.datetime]) -> Optional[str]:
+        if when is None:
+            when = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+        if not self.valid_until:
+            return "Data validity unknown"
+        if when > self.valid_until:
+            return f"Data only valid until {self.valid_until:%Y-%m-%d}"
+        return None
+
+    def valid(self, when: Optional[datetime.datetime] = None) -> bool:
+        """Return True if the data is valid at given datetime (or the current moment, if None is passed)"""
+        return self._check_validity(when) is None
+
     def tai_offset(
         self, when: datetime.datetime, check_validity: bool = True
-    ) -> Optional[datetime.timedelta]:
+    ) -> datetime.timedelta:
         """For a given datetime in UTC, return the TAI-UTC offset
 
         For times before the first leap second, a zero offset is returned.
@@ -70,10 +92,9 @@ class LeapSecondData(_LeapSecondData):
         unless `check_validity=False` is passed.  In this case, it will return
         the offset of last list entry."""
         if check_validity:
-            if not self.valid_until:
-                raise ValueError("Data validity unknown")
-            if when > self.valid_until:
-                raise ValueError("Data only valid until {self.valid_until:%Y-%m-%d}")
+            message = self._check_validity(when)
+            if message is not None:
+                raise ValidityError(message)
 
         old_tai = datetime.timedelta()
         for start, tai in self.leap_seconds:
@@ -81,6 +102,32 @@ class LeapSecondData(_LeapSecondData):
                 return old_tai
             old_tai = tai
         return self.leap_seconds[-1].tai
+
+    @classmethod
+    def from_standard_source(
+        cls, when: Optional[datetime.datetime] = None
+    ) -> "LeapSecondData":
+        """Using a list of standard sources, including network sources, find a
+        leap-second.list data valid for the given timestamp, or the current
+        time (if unspecified)"""
+
+        for location in [
+            "file:///usr/share/zoneinfo/leap-seconds.list",  # Linux
+            "file:///var/db/ntpd.leap-seconds.list",  # FreeBSD
+            "https://www.ietf.org/timezones/data/leap-seconds.list",
+        ]:
+            logging.debug("Trying leap second data from %s", location)
+            try:
+                candidate = cls.from_url(location)
+            except InvalidHashError:
+                logging.warning("Invalid hash while reading %s", location)
+                continue
+            if candidate.valid(when):
+                logging.info("Using leap second data from %s", location)
+                return candidate
+            logging.warning("Validity expired for %s", location)
+
+        raise ValidityError("No valid leap-second.list file could be found")
 
     @classmethod
     def from_file(
@@ -162,10 +209,10 @@ class LeapSecondData(_LeapSecondData):
 
         if check_hash:
             if content_hash is None:
-                raise ValueError("No #h line found")
+                raise InvalidHashError("No #h line found")
             digest = hasher.hexdigest()
             if digest != content_hash:
-                raise ValueError(
+                raise InvalidHashError(
                     f"Hash didn't match.  Expected {content_hash[:8]}..., got {digest[:8]}..."
                 )
 
@@ -174,13 +221,14 @@ class LeapSecondData(_LeapSecondData):
 
 def main() -> None:
     """When run as a main program, print some information about leap seconds"""
-    lsd = LeapSecondData.from_file()
+    logging.getLogger().setLevel(logging.INFO)
+    lsd = LeapSecondData.from_standard_source()
     print(f"Last updated: {lsd.last_updated:%Y-%m-%d}")
     print(f"Valid until:  {lsd.valid_until:%Y-%m-%d}")
     for when, offset in lsd.leap_seconds[-10:]:
         print(f"{when:%Y-%m-%d}: {offset.total_seconds()}")
     when = datetime.datetime(2011, 1, 1, tzinfo=datetime.timezone.utc)
-    print(f"TAI-UTC on {when:%Y-%m-%d}: {lsd.tai_offset(when)}")
+    print(f"TAI-UTC on {when:%Y-%m-%d} was {lsd.tai_offset(when).total_seconds()}")
 
 
 if __name__ == "__main__":
