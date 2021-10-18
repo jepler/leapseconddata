@@ -28,9 +28,6 @@ jobs:
     - name: Install deps
       run: python -mpip install -r requirements-dev.txt
 
-    - name: Test
-      run: python -mcoverage run --branch -m unittest && python -mcoverage report --fail-under=100
-
     - name: Build release
       run: python -mbuild
 
