@@ -8,10 +8,11 @@
 
 import datetime
 import hashlib
+import io
 import logging
 import re
 import urllib.request
-from typing import List, Optional, NamedTuple, BinaryIO
+from typing import Union, List, Optional, NamedTuple, BinaryIO
 
 NTP_EPOCH = datetime.datetime(1900, 1, 1, tzinfo=datetime.timezone.utc)
 
@@ -111,7 +112,7 @@ class LeapSecondData(_LeapSecondData):
         leap-second.list data valid for the given timestamp, or the current
         time (if unspecified)"""
 
-        for location in [
+        for location in [  # pragma no branch
             "file:///usr/share/zoneinfo/leap-seconds.list",  # Linux
             "file:///var/db/ntpd.leap-seconds.list",  # FreeBSD
             "https://www.ietf.org/timezones/data/leap-seconds.list",
@@ -119,15 +120,17 @@ class LeapSecondData(_LeapSecondData):
             logging.debug("Trying leap second data from %s", location)
             try:
                 candidate = cls.from_url(location)
-            except InvalidHashError:
+            except InvalidHashError:  # pragma no cover
                 logging.warning("Invalid hash while reading %s", location)
                 continue
-            if candidate.valid(when):
+            if candidate.valid(when):  # pragma no branch
                 logging.info("Using leap second data from %s", location)
                 return candidate
-            logging.warning("Validity expired for %s", location)
+            logging.warning("Validity expired for %s", location)  # pragma no cover
 
-        raise ValidityError("No valid leap-second.list file could be found")
+        raise ValidityError(
+            "No valid leap-second.list file could be found"
+        )  # pragma no cover
 
     @classmethod
     def from_file(
@@ -139,7 +142,7 @@ class LeapSecondData(_LeapSecondData):
 
         The default location is the standard location for the file on
         Debian systems."""
-        with open(filename, "rb") as open_file:
+        with open(filename, "rb") as open_file:  # pragma no cover
             return cls.from_open_file(open_file, check_hash)
 
     @classmethod
@@ -153,6 +156,17 @@ class LeapSecondData(_LeapSecondData):
         The default location is the official copy of the data from IETF"""
         with urllib.request.urlopen(url) as open_file:
             return cls.from_open_file(open_file, check_hash)
+
+    @classmethod
+    def from_data(
+        cls,
+        data: Union[bytes, str],
+        check_hash: bool = True,
+    ) -> "LeapSecondData":
+        """Retrieve the leap second list from local data"""
+        if isinstance(data, str):
+            data = data.encode("ascii", "replace")
+        return cls.from_open_file(io.BytesIO(data), check_hash)
 
     @staticmethod
     def _parse_content_hash(row: bytes) -> str:
@@ -231,5 +245,5 @@ def main() -> None:
     print(f"TAI-UTC on {when:%Y-%m-%d} was {lsd.tai_offset(when).total_seconds()}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma no cover
     main()
