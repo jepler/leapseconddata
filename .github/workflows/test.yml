@@ -13,6 +13,20 @@ on:
     types: [rerequested]
 
 jobs:
+  docs:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Install deps
+      run: python -mpip install -r requirements-dev.txt
+
+    - name: Build HTML docs
+      run: make html
+
   test:
     strategy:
       matrix:
