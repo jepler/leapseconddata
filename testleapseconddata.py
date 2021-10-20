@@ -64,7 +64,6 @@ class LeapSecondDataTest(unittest.TestCase):
             1999, 1, 1, tzinfo=datetime.timezone.utc
         ) - datetime.timedelta(seconds=1)
         assert when.tzinfo is not None
-        print(f"assertRaises {when=}")
         self.assertRaises(ValueError, db.tai_to_utc, when)
 
     def test_empty(self) -> None:
