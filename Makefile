@@ -6,7 +6,7 @@ all: coverage mypy
 COVERAGE_INCLUDE=--omit '/usr/**/*.py'
 .PHONY: coverage
 coverage:
-	$(PYTHON) -mcoverage run --branch -m unittest leapseconddata_test.py
+	$(PYTHON) -mcoverage run --branch -m unittest testleapseconddata.py
 	$(PYTHON) -mcoverage html $(COVERAGE_INCLUDE)
 	$(PYTHON) -mcoverage report $(COVERAGE_INCLUDE) --fail-under=100
 

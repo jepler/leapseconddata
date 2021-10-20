@@ -45,10 +45,10 @@ jobs:
 
     - name: Check stubs
       if: (! startsWith(matrix.python-version, 'pypy-'))
-      run: mypy --strict leapseconddata.py
+      run: mypy --strict *.py
 
     - name: Test
-      run: python -mcoverage run --branch -m unittest leapseconddata_test.py && python -mcoverage report --fail-under=100 && python -mcoverage xml
+      run: python -mcoverage run --branch -m unittest testleapseconddata.py && python -mcoverage report --fail-under=100 && python -mcoverage xml
 
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v2
