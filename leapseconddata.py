@@ -232,6 +232,8 @@ class LeapSecondData(_LeapSecondData):
             except InvalidHashError:  # pragma no cover
                 logging.warning("Invalid hash while reading %s", location)
                 continue
+            if candidate is None:
+                continue
             if candidate.valid(when):  # pragma no branch
                 logging.info("Using leap second data from %s", location)
                 return candidate
