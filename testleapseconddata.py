@@ -9,6 +9,7 @@
 import datetime
 import unittest
 import leapseconddata
+import leapseconddata.__main__
 
 db = leapseconddata.LeapSecondData.from_standard_source()
 
@@ -17,7 +18,7 @@ GMT1 = datetime.timezone(datetime.timedelta(seconds=3600), "GMT1")
 
 class LeapSecondDataTest(unittest.TestCase):
     def test_main(self) -> None:  # pylint: disable=no-self-use
-        leapseconddata.main()
+        leapseconddata.__main__.main()
 
     def test_corrupt(self) -> None:
         self.assertRaises(
