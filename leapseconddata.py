@@ -270,8 +270,11 @@ class LeapSecondData(_LeapSecondData):
             default is maintained by the IETF
         :param check_hash: Whether to check the embedded hash
         """
-        with urllib.request.urlopen(url) as open_file:
-            return cls.from_open_file(open_file, check_hash)
+        try:
+            with urllib.request.urlopen(url) as open_file:
+                return cls.from_open_file(open_file, check_hash)
+        except urllib.error.URLError:
+            return None
 
     @classmethod
     def from_data(
