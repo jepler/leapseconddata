@@ -133,7 +133,7 @@ class LeapSecondData(_LeapSecondData):
         For times before the first leap second, a zero offset is returned.
         For times after the end of the file's validity, an exception is raised
         unless `check_validity=False` is passed.  In this case, it will return
-        the offset of last list entry.
+        the offset of the last list entry.
         """
 
         is_tai = when.tzinfo is tai
@@ -164,7 +164,7 @@ class LeapSecondData(_LeapSecondData):
         :param when: Moment in time to convert.  If naive, it is assumed to be in UTC.
         :param check_validity: Check whether the database is valid for the given moment
 
-        Naive timestamps are assumed to be utc.  A TAI timestamp is returned unchanged."""
+        Naive timestamps are assumed to be UTC.  A TAI timestamp is returned unchanged."""
         if when.tzinfo is tai:
             return when
         when = self._utc_datetime(when)
@@ -175,7 +175,7 @@ class LeapSecondData(_LeapSecondData):
     ) -> datetime.datetime:
         """Convert the given datetime object to UTC
 
-        :param when: Moment in time to convert.  If naive, its ``tzinfo`` must be `tai`.
+        :param when: Moment in time to convert.  If not naive, its ``tzinfo`` must be `tai`.
         :param check_validity: Check whether the database is valid for the given moment
         """
         if when.tzinfo is not None and when.tzinfo is not tai:
@@ -222,7 +222,7 @@ class LeapSecondData(_LeapSecondData):
         time (if unspecified)"""
 
         for location in [  # pragma no branch
-            "file:///usr/share/zoneinfo/leap-seconds.list",  # Linux
+            "file:///usr/share/zoneinfo/leap-seconds.list",  # Debian Linux
             "file:///var/db/ntpd.leap-seconds.list",  # FreeBSD
             "https://www.ietf.org/timezones/data/leap-seconds.list",
         ]:
@@ -231,6 +231,8 @@ class LeapSecondData(_LeapSecondData):
                 candidate = cls.from_url(location, check_hash)
             except InvalidHashError:  # pragma no cover
                 logging.warning("Invalid hash while reading %s", location)
+                continue
+            if candidate is None:  # pragma no cover
                 continue
             if candidate.valid(when):  # pragma no branch
                 logging.info("Using leap second data from %s", location)
@@ -261,15 +263,18 @@ class LeapSecondData(_LeapSecondData):
         cls,
         url: str = "https://www.ietf.org/timezones/data/leap-seconds.list",
         check_hash: bool = True,
-    ) -> "LeapSecondData":
+    ) -> "Optional[LeapSecondData]":
         """Retrieve the leap second list from a local file
 
         :param filename: URL to read leap second data from.  The
             default is maintained by the IETF
         :param check_hash: Whether to check the embedded hash
         """
-        with urllib.request.urlopen(url) as open_file:
-            return cls.from_open_file(open_file, check_hash)
+        try:
+            with urllib.request.urlopen(url) as open_file:
+                return cls.from_open_file(open_file, check_hash)
+        except urllib.error.URLError:  # pragma no cover
+            return None
 
     @classmethod
     def from_data(
@@ -279,8 +284,7 @@ class LeapSecondData(_LeapSecondData):
     ) -> "LeapSecondData":
         """Retrieve the leap second list from local data
 
-        :param filename: URL to read leap second data from.  The
-            default is maintained by the IETF
+        :param data: Data to parse as a leap second list
         :param check_hash: Whether to check the embedded hash
         """
         if isinstance(data, str):
@@ -302,7 +306,7 @@ class LeapSecondData(_LeapSecondData):
     ) -> "LeapSecondData":
         """Retrieve the leap second list from an open file-like object
 
-        :param filename: Readable file containing the leap second data
+        :param open_file: Binary IO object containing the leap second list
         :param check_hash: Whether to check the embedded hash
         """
         leap_seconds: List[LeapSecondInfo] = []
