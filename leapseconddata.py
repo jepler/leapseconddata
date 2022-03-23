@@ -232,7 +232,7 @@ class LeapSecondData(_LeapSecondData):
             except InvalidHashError:  # pragma no cover
                 logging.warning("Invalid hash while reading %s", location)
                 continue
-            if candidate is None:
+            if candidate is None:  # pragma no cover
                 continue
             if candidate.valid(when):  # pragma no branch
                 logging.info("Using leap second data from %s", location)
@@ -263,7 +263,7 @@ class LeapSecondData(_LeapSecondData):
         cls,
         url: str = "https://www.ietf.org/timezones/data/leap-seconds.list",
         check_hash: bool = True,
-    ) -> "LeapSecondData":
+    ) -> "Optional[LeapSecondData]":
         """Retrieve the leap second list from a local file
 
         :param filename: URL to read leap second data from.  The
@@ -273,7 +273,7 @@ class LeapSecondData(_LeapSecondData):
         try:
             with urllib.request.urlopen(url) as open_file:
                 return cls.from_open_file(open_file, check_hash)
-        except urllib.error.URLError:
+        except urllib.error.URLError:  # pragma no cover
             return None
 
     @classmethod
