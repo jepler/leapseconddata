@@ -20,6 +20,7 @@ For example, to retrieve the UTC-TAI offset on January 1, 2011:
 
 """
 
+from __future__ import annotations
 import datetime
 import hashlib
 import io
@@ -97,7 +98,7 @@ class LeapSecondData(_LeapSecondData):
         leap_seconds: List[LeapSecondInfo],
         valid_until: Optional[datetime.datetime] = None,
         last_updated: Optional[datetime.datetime] = None,
-    ) -> "LeapSecondData":
+    ) -> LeapSecondData:
         return super().__new__(cls, leap_seconds, valid_until, last_updated)
 
     def _check_validity(self, when: Optional[datetime.datetime]) -> Optional[str]:
@@ -211,7 +212,7 @@ class LeapSecondData(_LeapSecondData):
         cls,
         when: Optional[datetime.datetime] = None,
         check_hash: bool = True,
-    ) -> "LeapSecondData":
+    ) -> LeapSecondData:
         """Get the list of leap seconds from a standard source.
 
         :param when: Check that the data is valid for this moment
@@ -248,7 +249,7 @@ class LeapSecondData(_LeapSecondData):
         cls,
         filename: str = "/usr/share/zoneinfo/leap-seconds.list",
         check_hash: bool = True,
-    ) -> "LeapSecondData":
+    ) -> LeapSecondData:
         """Retrieve the leap second list from a local file.
 
         :param filename: Local filename to read leap second data from.  The
@@ -263,7 +264,7 @@ class LeapSecondData(_LeapSecondData):
         cls,
         url: str = "https://www.ietf.org/timezones/data/leap-seconds.list",
         check_hash: bool = True,
-    ) -> "Optional[LeapSecondData]":
+    ) -> Optional[LeapSecondData]:
         """Retrieve the leap second list from a local file
 
         :param filename: URL to read leap second data from.  The
@@ -281,7 +282,7 @@ class LeapSecondData(_LeapSecondData):
         cls,
         data: Union[bytes, str],
         check_hash: bool = True,
-    ) -> "LeapSecondData":
+    ) -> LeapSecondData:
         """Retrieve the leap second list from local data
 
         :param data: Data to parse as a leap second list
@@ -303,7 +304,7 @@ class LeapSecondData(_LeapSecondData):
     @classmethod
     def from_open_file(
         cls, open_file: BinaryIO, check_hash: bool = True
-    ) -> "LeapSecondData":
+    ) -> LeapSecondData:
         """Retrieve the leap second list from an open file-like object
 
         :param open_file: Binary IO object containing the leap second list
