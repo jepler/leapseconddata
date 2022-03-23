@@ -222,7 +222,7 @@ class LeapSecondData(_LeapSecondData):
         time (if unspecified)"""
 
         for location in [  # pragma no branch
-            "file:///usr/share/zoneinfo/leap-seconds.list",  # Linux
+            "file:///usr/share/zoneinfo/leap-seconds.list",  # Debian Linux
             "file:///var/db/ntpd.leap-seconds.list",  # FreeBSD
             "https://www.ietf.org/timezones/data/leap-seconds.list",
         ]:
