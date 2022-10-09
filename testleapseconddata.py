@@ -78,11 +78,12 @@ class LeapSecondDataTest(unittest.TestCase):
         when = datetime.datetime(
             1999, 1, 1, tzinfo=datetime.timezone.utc
         ) - datetime.timedelta(seconds=1)
+        when = when.replace(fold=True)
         self.assertTrue(db.is_leap_second(when))
         self.assertFalse(db.is_leap_second(when - datetime.timedelta(seconds=1)))
         self.assertFalse(db.is_leap_second(when + datetime.timedelta(seconds=1)))
 
-        when = when.astimezone(GMT1)
+        when = when.astimezone(GMT1).replace(fold=True)
         self.assertTrue(db.is_leap_second(when))
         self.assertFalse(db.is_leap_second(when - datetime.timedelta(seconds=1)))
         self.assertFalse(db.is_leap_second(when + datetime.timedelta(seconds=1)))
