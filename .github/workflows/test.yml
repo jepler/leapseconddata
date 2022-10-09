@@ -14,7 +14,7 @@ on:
 
 jobs:
   docs:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -42,7 +42,7 @@ jobs:
     env:
       PYTHON: ${{ matrix.python-version }}
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Dump GitHub context
       env:
@@ -73,7 +73,7 @@ jobs:
         fail_ci_if_error: true
 
   pre-commit:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
