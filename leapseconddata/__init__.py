@@ -28,6 +28,7 @@ import io
 import logging
 import re
 import urllib.request
+from dataclasses import dataclass, field
 from typing import BinaryIO, List, NamedTuple, Optional, Union
 
 tai = datetime.timezone(datetime.timedelta(0), "TAI")
@@ -58,24 +59,8 @@ def _from_ntp_epoch(value: int) -> datetime.datetime:
     return NTP_EPOCH + datetime.timedelta(seconds=value)
 
 
-_LeapSecondData = NamedTuple(
-    "_LeapSecondData",
-    (
-        ("leap_seconds", List[LeapSecondInfo]),
-        ("valid_until", Optional[datetime.datetime]),
-        ("last_updated", Optional[datetime.datetime]),
-    ),
-)
-
-_LeapSecondData.leap_seconds.__doc__ = """All known and scheduled leap seconds"""
-_LeapSecondData.valid_until.__doc__ = """The list is valid until this UTC time"""
-_LeapSecondData.last_updated.__doc__ = """The last time the list was updated to add a new upcoming leap second.
-
-It is only updated when a new leap second is scheduled, so this date may be
-well in the past.  Use `valid_until` to determine validity."""
-
-
-class LeapSecondData(_LeapSecondData):
+@dataclass(frozen=True)
+class LeapSecondData:
     """Represent the list of known and scheduled leapseconds
 
     :param List[LeapSecondInfo] leap_seconds: A list of leap seconds
@@ -83,24 +68,14 @@ class LeapSecondData(_LeapSecondData):
     :param Optional[datetime.datetime] updated: The last update time of the data, if available
     """
 
-    __slots__ = ()
-
     leap_seconds: List[LeapSecondInfo]
     """All known and scheduled leap seconds"""
 
-    valid_until: Optional[datetime.datetime]
+    valid_until: Optional[datetime.datetime] = field(default=None)
     """The list is valid until this UTC time"""
 
-    last_updated: Optional[datetime.datetime]
+    last_updated: Optional[datetime.datetime] = field(default=None)
     """The last time the list was updated to add a new upcoming leap second"""
-
-    def __new__(
-        cls,
-        leap_seconds: List[LeapSecondInfo],
-        valid_until: Optional[datetime.datetime] = None,
-        last_updated: Optional[datetime.datetime] = None,
-    ) -> LeapSecondData:
-        return super().__new__(cls, leap_seconds, valid_until, last_updated)
 
     def _check_validity(self, when: Optional[datetime.datetime]) -> Optional[str]:
         if when is None:
