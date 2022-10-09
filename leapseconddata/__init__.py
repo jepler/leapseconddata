@@ -21,13 +21,14 @@ For example, to retrieve the UTC-TAI offset on January 1, 2011:
 """
 
 from __future__ import annotations
+
 import datetime
 import hashlib
 import io
 import logging
 import re
 import urllib.request
-from typing import Union, List, Optional, NamedTuple, BinaryIO
+from typing import BinaryIO, List, NamedTuple, Optional, Union
 
 tai = datetime.timezone(datetime.timedelta(0), "TAI")
 
@@ -344,7 +345,7 @@ class LeapSecondData(_LeapSecondData):
                 continue
 
             row = row.split(b"#")[0].strip()
-            content_to_hash.extend(re.findall(br"\d+", row))
+            content_to_hash.extend(re.findall(rb"\d+", row))
 
             parts = row.split()
             if len(parts) != 2:

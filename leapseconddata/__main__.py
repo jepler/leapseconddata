@@ -10,6 +10,7 @@ If this was a useful program, it would be exposed as an entry point in setup.cfg
 
 import datetime
 import logging
+
 from . import LeapSecondData
 
 

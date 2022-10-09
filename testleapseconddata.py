@@ -5,9 +5,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 """Test most leapseconddata functionality"""
-# pylint: disable=missing-class-docstring,missing-function-docstring,no-self-use
+# pylint: disable=missing-class-docstring,missing-function-docstring
 import datetime
 import unittest
+
 import leapseconddata
 import leapseconddata.__main__
 
@@ -17,7 +18,7 @@ GMT1 = datetime.timezone(datetime.timedelta(seconds=3600), "GMT1")
 
 
 class LeapSecondDataTest(unittest.TestCase):
-    def test_main(self) -> None:  # pylint: disable=no-self-use
+    def test_main(self) -> None:
         leapseconddata.__main__.main()
 
     def test_corrupt(self) -> None:
