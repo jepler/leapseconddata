@@ -10,6 +10,7 @@ If this was a useful program, it would be exposed as an entry point in setup.cfg
 
 import datetime
 import logging
+
 from . import LeapSecondData
 
 
@@ -38,7 +39,7 @@ def main() -> None:
     print("replaying leapsecond at end of 1998")
     for _ in range(5):
         print(
-            f"{u:%Y-%m-%d %H:%M:%S} UTC {'LS' if lsd.is_leap_second(u) else '  '} = {t:%Y-%m-%d %H:%M:%S} TAI {'LS' if lsd.is_leap_second(t) else '  '}"
+            f"{u:%Y-%m-%d %H:%M:%S} UTC {'LS' if u.fold else '  '} = {t:%Y-%m-%d %H:%M:%S} TAI {'LS' if lsd.is_leap_second(t) else '  '}"
         )
         t += datetime.timedelta(seconds=1)
         u = lsd.tai_to_utc(t)
