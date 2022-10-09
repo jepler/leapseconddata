@@ -176,6 +176,8 @@ class LeapSecondData(_LeapSecondData):
     ) -> datetime.datetime:
         """Convert the given datetime object to UTC
 
+        For a leap second, the ``fold`` property of the returned time is True.
+
         :param when: Moment in time to convert.  If not naive, its ``tzinfo`` must be `tai`.
         :param check_validity: Check whether the database is valid for the given moment
         """
@@ -186,6 +188,8 @@ class LeapSecondData(_LeapSecondData):
         result = (when - self.tai_offset(when, check_validity)).replace(
             tzinfo=datetime.timezone.utc
         )
+        if self.is_leap_second(when, check_validity):
+            result = result.replace(fold=True)
         return result
 
     def is_leap_second(
@@ -198,9 +202,12 @@ class LeapSecondData(_LeapSecondData):
 
         For a TAI timestamp, it returns True for the leap second (the one that
         would be shown as :60 in UTC).  For a UTC timestamp, it returns True
-        for the :59 second, since the :60 second cannot be represented."""
+        for the :59 second if ``fold``, since the :60 second cannot be
+        represented."""
         if when.tzinfo is not tai:
-            when = self.to_tai(when, check_validity) + datetime.timedelta(seconds=1)
+            when = self.to_tai(when, check_validity) + datetime.timedelta(
+                seconds=when.fold
+            )
         tai_offset1 = self.tai_offset(when, check_validity)
         tai_offset2 = self.tai_offset(
             when - datetime.timedelta(seconds=1), check_validity
