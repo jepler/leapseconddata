@@ -59,6 +59,11 @@ def _from_ntp_epoch(value: int) -> datetime.datetime:
     return NTP_EPOCH + datetime.timedelta(seconds=value)
 
 
+def datetime_is_tai(when: datetime.datetime) -> bool:
+    """Return true if the datetime is in the TAI timescale"""
+    return when.tzname() == "TAI"
+
+
 @dataclass(frozen=True)
 class LeapSecondData:
     """Represent the list of known and scheduled leapseconds
@@ -113,7 +118,7 @@ class LeapSecondData:
         the offset of the last list entry.
         """
 
-        is_tai = when.tzinfo is tai
+        is_tai = datetime_is_tai(when)
         if not is_tai:
             when = self._utc_datetime(when)
         if check_validity:
@@ -142,7 +147,7 @@ class LeapSecondData:
         :param check_validity: Check whether the database is valid for the given moment
 
         Naive timestamps are assumed to be UTC.  A TAI timestamp is returned unchanged."""
-        if when.tzinfo is tai:
+        if datetime_is_tai(when):
             return when
         when = self._utc_datetime(when)
         return (when + self.tai_offset(when, check_validity)).replace(tzinfo=tai)
