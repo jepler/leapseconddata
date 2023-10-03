@@ -252,13 +252,13 @@ class LeapSecondData:
     @classmethod
     def from_url(
         cls,
-        url: str = "https://www.ietf.org/timezones/data/leap-seconds.list",
+        url: str = "https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list",
         check_hash: bool = True,
     ) -> Optional[LeapSecondData]:
         """Retrieve the leap second list from a local file
 
         :param filename: URL to read leap second data from.  The
-            default is maintained by the IETF
+            default is maintained by the tzdata authors
         :param check_hash: Whether to check the embedded hash
         """
         try:
