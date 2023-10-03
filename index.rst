@@ -9,10 +9,6 @@ leapseconddata
     :target: https://github.com/jepler/leapseconddata/actions/workflows/test.yml
     :alt: Test leapseconddata
 
-.. image:: https://codecov.io/gh/jepler/leapseconddata/branch/main/graph/badge.svg?token=Exx0c3Gp65
-    :target: https://codecov.io/gh/jepler/leapseconddata
-    :alt: codecov
-
 .. image:: https://img.shields.io/pypi/v/leapseconddata
     :target: https://pypi.org/project/leapseconddata
     :alt: PyPI
