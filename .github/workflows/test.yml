@@ -33,22 +33,25 @@ jobs:
     strategy:
       matrix:
         python-version:
-        - '3.7'
         - '3.8'
         - '3.9'
         - '3.10'
-        - 'pypy-3.7'
+        - '3.11'
+        - '3.12.0-alpha.0 - 3.12'
+        - 'pypy-3.9'
+        os-version:
+        - 'ubuntu-latest'
+        include:
+          - os-version: 'macos-latest'
+            python-version: '3.x'
+          - os-version: 'windows-latest'
+            python-version: '3.x'
 
     env:
       PYTHON: ${{ matrix.python-version }}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os-version }}
     steps:
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
-
     - uses: actions/checkout@v2.2.0
 
     - name: Set up Python
