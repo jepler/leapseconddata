@@ -213,7 +213,8 @@ class LeapSecondData:
         for location in [  # pragma no branch
             "file:///usr/share/zoneinfo/leap-seconds.list",  # Debian Linux
             "file:///var/db/ntpd.leap-seconds.list",  # FreeBSD
-            "https://www.ietf.org/timezones/data/leap-seconds.list",
+            "https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list",
+            "https://www.meinberg.de/download/ntp/leap-seconds.list",
         ]:
             logging.debug("Trying leap second data from %s", location)
             try:
