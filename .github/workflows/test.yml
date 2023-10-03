@@ -33,26 +33,29 @@ jobs:
     strategy:
       matrix:
         python-version:
-        - '3.7'
         - '3.8'
         - '3.9'
         - '3.10'
-        - 'pypy-3.7'
+        - '3.11'
+        - '3.12.0-alpha.0 - 3.12'
+        - 'pypy-3.9'
+        os-version:
+        - 'ubuntu-latest'
+        include:
+          - os-version: 'macos-latest'
+            python-version: '3.x'
+          - os-version: 'windows-latest'
+            python-version: '3.x'
 
     env:
       PYTHON: ${{ matrix.python-version }}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os-version }}
     steps:
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
-
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -60,7 +63,7 @@ jobs:
       run: python -mpip install -r requirements-dev.txt
 
     - name: Check stubs
-      if: (! startsWith(matrix.python-version, 'pypy-'))
+      if: (startsWith(matrix.python-version, '3.12') && startswith(matrix.os-version, 'ubuntu-'))
       run: mypy --strict *.py
 
     - name: Test
@@ -75,12 +78,6 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
-    - name: set PY
-      run: echo >>$GITHUB_ENV PY="$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')"
-    - uses: actions/cache@v1
-      with:
-        path: ~/.cache/pre-commit
-        key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
-    - uses: pre-commit/action@v1.1.0
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+    - uses: pre-commit/action@v3.0.0
