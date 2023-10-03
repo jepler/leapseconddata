@@ -52,10 +52,10 @@ jobs:
 
     runs-on: ${{ matrix.os-version }}
     steps:
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -63,7 +63,7 @@ jobs:
       run: python -mpip install -r requirements-dev.txt
 
     - name: Check stubs
-      if: (! startsWith(matrix.python-version, 'pypy-'))
+      if: (startsWith(matrix.python-version, '3.12') && startswith(matrix.os-version, 'ubuntu-'))
       run: mypy --strict *.py
 
     - name: Test
