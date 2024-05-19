@@ -84,7 +84,7 @@ class LeapSecondData:
 
     def _check_validity(self, when: Optional[datetime.datetime]) -> Optional[str]:
         if when is None:
-            when = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+            when = datetime.datetime.now(datetime.timezone.utc)
         if not self.valid_until:
             return "Data validity unknown"
         if when > self.valid_until:
