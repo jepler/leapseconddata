@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 """Test most leapseconddata functionality"""
+
 # pylint: disable=missing-class-docstring,missing-function-docstring
 import datetime
 import unittest

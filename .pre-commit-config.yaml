@@ -6,18 +6,8 @@ default_language_version:
   python: python3
 
 repos:
-- repo: https://github.com/psf/black
-  rev: 23.7.0
-  hooks:
-  - id: black
-- repo: https://github.com/pycqa/isort
-  rev: 5.12.0
-  hooks:
-    - id: isort
-      name: isort (python)
-      args: ['--profile', 'black']
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: v4.6.0
   hooks:
   -   id: check-yaml
   -   id: end-of-file-fixer
@@ -25,10 +15,15 @@ repos:
   -   id: trailing-whitespace
       exclude: tests
 - repo: https://github.com/fsfe/reuse-tool
-  rev: v2.1.0
+  rev: v3.0.2
   hooks:
   - id: reuse
-- repo: https://github.com/pycqa/pylint
-  rev: v2.17.1
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.4.3
   hooks:
-  - id: pylint
+    # Run the linter.
+    - id: ruff
+      args: [ --fix ]
+    # Run the formatter.
+    - id: ruff-format
