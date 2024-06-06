@@ -20,8 +20,8 @@ def main() -> None:
     lsd = LeapSecondData.from_standard_source()
     print(f"Last updated: {lsd.last_updated:%Y-%m-%d}")
     print(f"Valid until:  {lsd.valid_until:%Y-%m-%d}")
-    for when, offset in lsd.leap_seconds[-10:]:
-        print(f"{when:%Y-%m-%d}: {offset.total_seconds()}")
+    for leap_second in lsd.leap_seconds[-10:]:
+        print(f"{leap_second.start:%Y-%m-%d}: {leap_second.tai_offset.total_seconds()}")
     when = datetime.datetime(2011, 1, 1, tzinfo=datetime.timezone.utc)
     print(f"TAI-UTC on {when:%Y-%m-%d} was {lsd.tai_offset(when).total_seconds()}")
 
