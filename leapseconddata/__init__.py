@@ -38,8 +38,12 @@ NTP_EPOCH = datetime.datetime(1900, 1, 1, tzinfo=datetime.timezone.utc)
 
 @dataclass(frozen=True)
 class LeapSecondInfo:
+    """Information about a particular leap second"""
+
     start: datetime.datetime
-    """The UTC timestamp just after the insertion of the leap second."""
+    """The UTC timestamp just after the insertion of the leap second.
+
+    The leap second is actually the 61th second of the previous minute (xx:xx:60)"""
 
     tai_offset: datetime.timedelta
     """The new TAI-UTC offset.  Positive numbers indicate that TAI is ahead of UTC"""
