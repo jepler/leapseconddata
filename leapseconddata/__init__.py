@@ -29,22 +29,20 @@ import logging
 import re
 import urllib.request
 from dataclasses import dataclass, field
-from typing import BinaryIO, List, NamedTuple, Optional, Union
+from typing import BinaryIO, List, Optional, Union
 
 tai = datetime.timezone(datetime.timedelta(0), "TAI")
 
 NTP_EPOCH = datetime.datetime(1900, 1, 1, tzinfo=datetime.timezone.utc)
 
-LeapSecondInfo = NamedTuple(
-    "LeapSecondInfo", (("start", datetime.datetime), ("tai", datetime.timedelta))
-)
 
-LeapSecondInfo.start.__doc__ = """The UTC timestamp just after the insertion of the leap second.
+@dataclass(frozen=True)
+class LeapSecondInfo:
+    start: datetime.datetime
+    """The UTC timestamp just after the insertion of the leap second."""
 
-The leap second is actually the 60th second of the previous minute"""
-LeapSecondInfo.tai.__doc__ = (
+    tai_offset: datetime.timedelta
     """The new TAI-UTC offset.  Positive numbers indicate that TAI is ahead of UTC"""
-)
 
 
 class ValidityError(ValueError):
@@ -130,13 +128,14 @@ class LeapSecondData:
             return datetime.timedelta(0)
 
         old_tai = datetime.timedelta()
-        for start, tai_offset in self.leap_seconds:
+        for leap_second in self.leap_seconds:
+            start = leap_second.start
             if is_tai:
-                start += tai_offset - datetime.timedelta(seconds=1)
+                start += leap_second.tai_offset - datetime.timedelta(seconds=1)
             if when < start:
                 return old_tai
-            old_tai = tai_offset
-        return self.leap_seconds[-1].tai
+            old_tai = leap_second.tai_offset
+        return self.leap_seconds[-1].tai_offset
 
     def to_tai(
         self, when: datetime.datetime, check_validity: bool = True
