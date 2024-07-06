@@ -34,8 +34,13 @@ class State:
     leap_second_data: LeapSecondData
 
 
-@click.group()
-@click.option("--url", type=str, default=None)
+@click.group(help="Access leap second database information")
+@click.option(
+    "--url",
+    type=str,
+    default=None,
+    help="URL for leap second data (unspecified to use default source",
+)
 @click.option("--debug/--no-debug", type=bool)
 @click.pass_context
 def cli(ctx, url, debug) -> None:
@@ -48,7 +53,7 @@ def cli(ctx, url, debug) -> None:
             ctx.obj = LeapSecondData.from_url(url)
 
 
-@cli.command()
+@cli.command(help="Show information about leap second database")
 @click.pass_context
 def info(ctx) -> None:
     leap_second_data = ctx.obj
@@ -58,10 +63,10 @@ def info(ctx) -> None:
     print(f"{len(leap_second_data.leap_seconds)-1} leap seconds")
 
 
-@cli.command()
+@cli.command(help="Get the UTC offset for a given moment, in seconds")
 @click.pass_context
 @click.option("--tai/--utc", "is_tai", default=False)
-@click.argument("timestamp", type=UTCDateTime(), default=utcnow())
+@click.argument("timestamp", type=UTCDateTime(), default=utcnow(), metavar="TIMESTAMP")
 def offset(ctx, is_tai, timestamp: datetime.datetime) -> None:
     leap_second_data = ctx.obj
     if is_tai:
@@ -69,10 +74,12 @@ def offset(ctx, is_tai, timestamp: datetime.datetime) -> None:
     print(f"{leap_second_data.tai_offset(timestamp).total_seconds():.0f}")
 
 
-@cli.command()
+@cli.command(help="Convert timestamps between TAI and UTC")
 @click.pass_context
 @click.option("--to-tai/--to-utc", default=True)
-@click.argument("timestamp", type=UTCDateTime(), default=None, required=False)
+@click.argument(
+    "timestamp", type=UTCDateTime(), default=None, required=False, metavar="TIMESTAMP"
+)
 def convert(ctx, to_tai: bool, timestamp: datetime.datetime = None) -> None:
     leap_second_data = ctx.obj
     if to_tai:
@@ -90,9 +97,9 @@ def convert(ctx, to_tai: bool, timestamp: datetime.datetime = None) -> None:
             print(f"{when_utc:%Y-%m-%d %H:%M:%S} UTC")
 
 
-@cli.command()
+@cli.command(help="Get the next leap second after a given UTC timestamp")
 @click.pass_context
-@click.argument("timestamp", type=UTCDateTime(), default=utcnow())
+@click.argument("timestamp", type=UTCDateTime(), default=utcnow(), metavar="TIMESTAMP")
 def next_leapsecond(ctx, timestamp: datetime.datetime) -> None:
     leap_second_data = ctx.obj
     ls = min(
@@ -106,9 +113,9 @@ def next_leapsecond(ctx, timestamp: datetime.datetime) -> None:
         print(f"{ls.start:%Y-%m-%d %H:%M:%S} UTC")
 
 
-@cli.command()
+@cli.command(help="Get the last leap second before a given UTC timestamp")
 @click.pass_context
-@click.argument("timestamp", type=UTCDateTime(), default=utcnow())
+@click.argument("timestamp", type=UTCDateTime(), default=utcnow(), metavar="TIMESTAMP")
 def previous_leapsecond(ctx, timestamp: datetime.datetime) -> None:
     leap_second_data = ctx.obj
     ls = max(
@@ -122,11 +129,14 @@ def previous_leapsecond(ctx, timestamp: datetime.datetime) -> None:
         print(f"{ls.start:%Y-%m-%d %H:%M:%S} UTC")
 
 
-@cli.command()
+@cli.command(help="Print information about leap seconds")
 @click.argument(
-    "start", type=UTCDateTime(), default=datetime.datetime(1972, 1, 1, tzinfo=utc)
+    "start",
+    type=UTCDateTime(),
+    default=datetime.datetime(1972, 1, 1, tzinfo=utc),
+    metavar="START-TIMESTAMP",
 )
-@click.argument("end", type=UTCDateTime(), default=utcnow())
+@click.argument("end", type=UTCDateTime(), default=utcnow(), metavar="[END-TIMESTAMP]")
 @click.pass_context
 def table(ctx, start, end) -> None:
     leap_second_data = ctx.obj
