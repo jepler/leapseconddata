@@ -9,6 +9,7 @@ Commandline interface to leap second data
 from dataclasses import dataclass
 import datetime
 import logging
+import typing
 
 from . import LeapSecondData, tai
 
@@ -17,12 +18,17 @@ import click
 utc = datetime.timezone.utc
 
 
-def utcnow():
+def utcnow() -> datetime.datetime:
     return datetime.datetime.utcnow().replace(tzinfo=utc)
 
 
 class UTCDateTime(click.DateTime):
-    def convert(self, value, param, ctx):
+    def convert(
+        self,
+        value: typing.Any,
+        param: click.Parameter | None,
+        ctx: click.Context | None,
+    ) -> typing.Any:
         converted = super().convert(value, param, ctx)
         if converted is not None:
             return converted.replace(tzinfo=utc)
@@ -43,7 +49,7 @@ class State:
 )
 @click.option("--debug/--no-debug", type=bool)
 @click.pass_context
-def cli(ctx, url, debug) -> None:
+def cli(ctx: click.Context, url: str, debug: bool) -> None:
     if debug:  # pragma no cover
         logging.getLogger().setLevel(logging.DEBUG)
     if ctx.find_object(LeapSecondData) is None:  # pragma no branch
@@ -55,7 +61,7 @@ def cli(ctx, url, debug) -> None:
 
 @cli.command(help="Show information about leap second database")
 @click.pass_context
-def info(ctx) -> None:
+def info(ctx: click.Context) -> None:
     leap_second_data = ctx.obj
     print(f"Last updated: {leap_second_data.last_updated:%Y-%m-%d}")
     print(f"Valid until:  {leap_second_data.valid_until:%Y-%m-%d}")
@@ -67,7 +73,7 @@ def info(ctx) -> None:
 @click.pass_context
 @click.option("--tai/--utc", "is_tai", default=False)
 @click.argument("timestamp", type=UTCDateTime(), default=utcnow(), metavar="TIMESTAMP")
-def offset(ctx, is_tai, timestamp: datetime.datetime) -> None:
+def offset(ctx: click.Context, is_tai: bool, timestamp: datetime.datetime) -> None:
     leap_second_data = ctx.obj
     if is_tai:
         timestamp = timestamp.replace(tzinfo=tai)
@@ -80,7 +86,9 @@ def offset(ctx, is_tai, timestamp: datetime.datetime) -> None:
 @click.argument(
     "timestamp", type=UTCDateTime(), default=None, required=False, metavar="TIMESTAMP"
 )
-def convert(ctx, to_tai: bool, timestamp: datetime.datetime = None) -> None:
+def convert(
+    ctx: click.Context, to_tai: bool, timestamp: datetime.datetime | None = None
+) -> None:
     leap_second_data = ctx.obj
     if to_tai:
         if timestamp is None:
@@ -100,7 +108,7 @@ def convert(ctx, to_tai: bool, timestamp: datetime.datetime = None) -> None:
 @cli.command(help="Get the next leap second after a given UTC timestamp")
 @click.pass_context
 @click.argument("timestamp", type=UTCDateTime(), default=utcnow(), metavar="TIMESTAMP")
-def next_leapsecond(ctx, timestamp: datetime.datetime) -> None:
+def next_leapsecond(ctx: click.Context, timestamp: datetime.datetime) -> None:
     leap_second_data = ctx.obj
     ls = min(
         (ls for ls in leap_second_data.leap_seconds if ls.start > timestamp),
@@ -116,7 +124,7 @@ def next_leapsecond(ctx, timestamp: datetime.datetime) -> None:
 @cli.command(help="Get the last leap second before a given UTC timestamp")
 @click.pass_context
 @click.argument("timestamp", type=UTCDateTime(), default=utcnow(), metavar="TIMESTAMP")
-def previous_leapsecond(ctx, timestamp: datetime.datetime) -> None:
+def previous_leapsecond(ctx: click.Context, timestamp: datetime.datetime) -> None:
     leap_second_data = ctx.obj
     ls = max(
         (ls for ls in leap_second_data.leap_seconds if ls.start < timestamp),
@@ -138,7 +146,7 @@ def previous_leapsecond(ctx, timestamp: datetime.datetime) -> None:
 )
 @click.argument("end", type=UTCDateTime(), default=utcnow(), metavar="[END-TIMESTAMP]")
 @click.pass_context
-def table(ctx, start, end) -> None:
+def table(ctx: click.Context, start: datetime.datetime, end: datetime.datetime) -> None:
     leap_second_data = ctx.obj
     for leap_second in leap_second_data.leap_seconds:  # pragma no branch
         if leap_second.start < start:
