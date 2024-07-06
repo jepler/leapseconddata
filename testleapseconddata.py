@@ -19,8 +19,25 @@ GMT1 = datetime.timezone(datetime.timedelta(seconds=3600), "GMT1")
 
 
 class LeapSecondDataTest(unittest.TestCase):
+    def run_main(self, *args: str) -> None:
+        try:
+            leapseconddata.__main__.cli(args)
+        except SystemExit as e:
+            self.assertEqual(e.code, 0)
+
     def test_main(self) -> None:
-        leapseconddata.__main__.main()
+        self.run_main("info")
+        self.run_main("table", "2009-1-1", "2016-1-1")
+        self.run_main("convert", "--to-utc", "2009-01-01 00:00:33")
+        self.run_main("convert", "--to-utc", "2009-01-01 00:00:34")
+        self.run_main("convert", "2009-01-01 00:00:33")
+        self.run_main("convert")
+        self.run_main("offset", "2009-01-01 00:00:33")
+        self.run_main("offset", "--tai", "2009-01-01 00:00:33")
+        self.run_main("next-leapsecond", "2009-2-2")
+        self.run_main("next-leapsecond", "2100-2-2")
+        self.run_main("previous-leapsecond", "2009-2-2")
+        self.run_main("previous-leapsecond", "1960-2-2")
 
     def test_corrupt(self) -> None:
         self.assertRaises(
