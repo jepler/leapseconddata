@@ -12,7 +12,7 @@ coverage:
 
 .PHONY: mypy
 mypy:
-	mypy --strict *.py
+	mypy --strict leapseconddata
 
 # Minimal makefile for Sphinx documentation
 #

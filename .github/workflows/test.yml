@@ -64,7 +64,7 @@ jobs:
 
     - name: Check stubs
       if: (startsWith(matrix.python-version, '3.12') && startswith(matrix.os-version, 'ubuntu-'))
-      run: mypy --strict *.py
+      run: make mypy
 
     - name: Test
       run: python -mcoverage run --branch -m unittest testleapseconddata.py && python -mcoverage report --fail-under=100 && python -mcoverage xml
