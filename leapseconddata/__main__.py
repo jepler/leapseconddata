@@ -6,6 +6,8 @@
 Commandline interface to leap second data
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import datetime
 import logging
