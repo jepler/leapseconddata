@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 build
+click
 coverage
 mypy; implementation_name=="cpython"
 pre-commit
