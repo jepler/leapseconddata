@@ -1,4 +1,4 @@
-# pylint: disable=all
+# ruff: noqa
 # fmt: off
 # Configuration file for the Sphinx documentation builder.
 #

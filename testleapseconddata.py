@@ -4,6 +4,9 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
+# ruff: noqa: D101
+# ruff: noqa: D102
+
 """Test most leapseconddata functionality"""
 
 # pylint: disable=missing-class-docstring,missing-function-docstring
@@ -55,9 +58,7 @@ class LeapSecondDataTest(unittest.TestCase):
             leapseconddata.LeapSecondData.from_data,
             "#\n",
         )
-        self.assertIsNotNone(
-            leapseconddata.LeapSecondData.from_data("#h 0 0 0 0 0\n", False)
-        )
+        self.assertIsNotNone(leapseconddata.LeapSecondData.from_data("#h 0 0 0 0 0\n", False))
 
     def test_invalid(self) -> None:
         valid_until = db.valid_until
@@ -76,13 +77,9 @@ class LeapSecondDataTest(unittest.TestCase):
             ]
         )
         self.assertRaises(leapseconddata.ValidityError, db1.tai_offset, db.valid_until)
-        self.assertEqual(
-            db1.tai_offset(valid_until, False), datetime.timedelta(seconds=1)
-        )
+        self.assertEqual(db1.tai_offset(valid_until, False), datetime.timedelta(seconds=1))
 
-        when = datetime.datetime(
-            1999, 1, 1, tzinfo=datetime.timezone.utc
-        ) - datetime.timedelta(seconds=1)
+        when = datetime.datetime(1999, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         assert when.tzinfo is not None
         self.assertRaises(ValueError, db.tai_to_utc, when)
 
@@ -94,9 +91,7 @@ class LeapSecondDataTest(unittest.TestCase):
         )
 
     def test_tz(self) -> None:
-        when = datetime.datetime(
-            1999, 1, 1, tzinfo=datetime.timezone.utc
-        ) - datetime.timedelta(seconds=1)
+        when = datetime.datetime(1999, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         when = when.replace(fold=True)
         self.assertTrue(db.is_leap_second(when))
         self.assertFalse(db.is_leap_second(when - datetime.timedelta(seconds=1)))
@@ -113,9 +108,7 @@ class LeapSecondDataTest(unittest.TestCase):
         print(when_utc)
 
     def test_to_tai(self) -> None:
-        when = datetime.datetime(
-            1999, 1, 1, tzinfo=datetime.timezone.utc
-        ) - datetime.timedelta(seconds=1)
+        when = datetime.datetime(1999, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         when_tai = db.to_tai(when)
         when_tai2 = db.to_tai(when_tai)
         assert when != when_tai
