@@ -1,18 +1,19 @@
-PYTHON ?= python3
+VENV_BIN = _env/bin
+VENV_PYTHON = $(VENV_BIN)/python3
 
 .PHONY: all
 all: coverage mypy
 
 COVERAGE_INCLUDE=--omit '/usr/**/*.py'
 .PHONY: coverage
-coverage:
-	$(PYTHON) -mcoverage run --branch -m unittest testleapseconddata.py
-	$(PYTHON) -mcoverage html $(COVERAGE_INCLUDE)
-	$(PYTHON) -mcoverage report $(COVERAGE_INCLUDE) --fail-under=100
+coverage: $(VENV_PYTHON)
+	$(VENV_PYTHON) -mcoverage run --branch -m unittest testleapseconddata.py
+	$(VENV_PYTHON) -mcoverage html $(COVERAGE_INCLUDE)
+	$(VENV_PYTHON) -mcoverage report $(COVERAGE_INCLUDE) --fail-under=100
 
 .PHONY: mypy
-mypy:
-	mypy --strict leapseconddata
+mypy: $(VENV_PYTHON)
+	$(VENV_BIN)/mypy --strict leapseconddata
 
 # Minimal makefile for Sphinx documentation
 #
@@ -33,9 +34,12 @@ help:
 # Route particular targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 .PHONY: html
-html:
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+html: $(VENV_PYTHON)
+	@$(VENV_PYHTON) $(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+$(VENV_PYTHON):
+	python -mvenv _env
+	_env/bin/pip install -r requirements-dev.txt
 
 # Copyright (C) 2021 Jeff Epler <jepler@gmail.com>
 # SPDX-FileCopyrightText: 2021 Jeff Epler
