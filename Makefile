@@ -21,7 +21,7 @@ mypy:
 # from the environment for the first two.
 SPHINXOPTS    ?= -a -E -j auto
 SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = .
+SOURCEDIR     = docs
 BUILDDIR      = _build
 
 # Put it first so that "make" without argument is like "make help".
