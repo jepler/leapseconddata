@@ -6,14 +6,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import datetime
 import logging
 import typing
-
-from . import LeapSecondData, tai
+from dataclasses import dataclass
 
 import click
+
+from . import LeapSecondData, tai
 
 utc = datetime.timezone.utc
 

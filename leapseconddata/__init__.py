@@ -29,7 +29,7 @@ import logging
 import re
 import urllib.request
 from dataclasses import dataclass, field
-from typing import BinaryIO, List, Optional, Union
+from typing import BinaryIO
 
 tai = datetime.timezone(datetime.timedelta(0), "TAI")
 
@@ -75,16 +75,16 @@ class LeapSecondData:
     :param Optional[datetime.datetime] updated: The last update time of the data
     """
 
-    leap_seconds: List[LeapSecondInfo]
+    leap_seconds: list[LeapSecondInfo]
     """All known and scheduled leap seconds"""
 
-    valid_until: Optional[datetime.datetime] = field(default=None)
+    valid_until: datetime.datetime | None = field(default=None)
     """The list is valid until this UTC time"""
 
-    last_updated: Optional[datetime.datetime] = field(default=None)
+    last_updated: datetime.datetime | None = field(default=None)
     """The last time the list was updated to add a new upcoming leap second"""
 
-    def _check_validity(self, when: Optional[datetime.datetime]) -> Optional[str]:
+    def _check_validity(self, when: datetime.datetime | None) -> str | None:
         if when is None:
             when = datetime.datetime.now(datetime.timezone.utc)
         if not self.valid_until:
@@ -93,7 +93,7 @@ class LeapSecondData:
             return f"Data only valid until {self.valid_until:%Y-%m-%d}"
         return None
 
-    def valid(self, when: Optional[datetime.datetime] = None) -> bool:
+    def valid(self, when: datetime.datetime | None = None) -> bool:
         """Return True if the data is valid at given datetime
 
         If `when` is none, the validity for the current moment is checked.
@@ -190,7 +190,7 @@ class LeapSecondData:
     @classmethod
     def from_standard_source(
         cls,
-        when: Optional[datetime.datetime] = None,
+        when: datetime.datetime | None = None,
         check_hash: bool = True,
     ) -> LeapSecondData:
         """Get the list of leap seconds from a standard source.
@@ -243,7 +243,7 @@ class LeapSecondData:
         cls,
         url: str = "https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list",
         check_hash: bool = True,
-    ) -> Optional[LeapSecondData]:
+    ) -> LeapSecondData | None:
         """Retrieve the leap second list from a local file
 
         :param filename: URL to read leap second data from.  The
@@ -259,7 +259,7 @@ class LeapSecondData:
     @classmethod
     def from_data(
         cls,
-        data: Union[bytes, str],
+        data: bytes | str,
         check_hash: bool = True,
     ) -> LeapSecondData:
         """Retrieve the leap second list from local data
@@ -288,7 +288,7 @@ class LeapSecondData:
         :param open_file: Binary IO object containing the leap second list
         :param check_hash: Whether to check the embedded hash
         """
-        leap_seconds: List[LeapSecondInfo] = []
+        leap_seconds: list[LeapSecondInfo] = []
         valid_until = None
         last_updated = None
         content_to_hash = []
