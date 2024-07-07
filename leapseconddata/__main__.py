@@ -51,7 +51,7 @@ class State:
     "--url",
     type=str,
     default=None,
-    help="URL for leap second data (unspecified to use default source",
+    help="URL for leap second data (unspecified to use default source)",
 )
 @click.option("--debug/--no-debug", type=bool)
 @click.pass_context

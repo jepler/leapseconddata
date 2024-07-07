@@ -27,7 +27,7 @@ Usage: leapsecond [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --url TEXT            URL for leap second data (unspecified to use default
-                        source
+                        source)
   --debug / --no-debug
   --help                Show this message and exit.
 
