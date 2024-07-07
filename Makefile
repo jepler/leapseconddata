@@ -13,7 +13,7 @@ coverage: $(VENV_PYTHON)
 
 .PHONY: mypy
 mypy: $(VENV_PYTHON)
-	$(VENV_BIN)/mypy --strict leapseconddata
+	$(VENV_BIN)/mypy --strict leapseconddata testleapseconddata.py
 
 # Minimal makefile for Sphinx documentation
 #
