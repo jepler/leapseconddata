@@ -105,7 +105,10 @@ class LeapSecondDataTest(unittest.TestCase):
         when_tai = datetime.datetime(1999, 1, 1, 0, 0, 32, tzinfo=leapseconddata.tai)
         when_utc = db.tai_to_utc(when_tai)
         self.assertIs(when_utc.tzinfo, datetime.timezone.utc)
-        print(when_utc)
+
+        when_tai = datetime.datetime(1999, 1, 1, 0, 0, 32, tzinfo=None)  # noqa: DTZ001
+        when_utc2 = db.tai_to_utc(when_tai)
+        self.assertEqual(when_utc, when_utc2)
 
     def test_to_tai(self) -> None:
         when = datetime.datetime(1999, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)

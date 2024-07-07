@@ -26,6 +26,7 @@ import datetime
 import hashlib
 import io
 import logging
+import pathlib
 import re
 import urllib.request
 from dataclasses import dataclass, field
@@ -237,7 +238,7 @@ class LeapSecondData:
             default is the standard location for the file on Debian systems.
         :param check_hash: Whether to check the embedded hash
         """
-        with open(filename, "rb") as open_file:  # pragma no cover
+        with pathlib.Path(filename).open("rb") as open_file:  # pragma no cover
             return cls.from_open_file(open_file, check_hash=check_hash)
 
     @classmethod
@@ -301,7 +302,7 @@ class LeapSecondData:
         hasher = hashlib.sha1()
 
         for row in open_file:
-            row = row.strip()
+            row = row.strip()  # noqa: PLW2901
             if row.startswith(b"#h"):
                 content_hash = cls._parse_content_hash(row)
                 continue
@@ -318,11 +319,11 @@ class LeapSecondData:
                 last_updated = _from_ntp_epoch(int(parts[1]))
                 continue
 
-            row = row.split(b"#")[0].strip()
+            row = row.split(b"#")[0].strip()  # noqa: PLW2901
             content_to_hash.extend(re.findall(rb"\d+", row))
 
             parts = row.split()
-            if len(parts) != 2:
+            if len(parts) != 2:  # noqa: PLR2004
                 continue
             hasher.update(parts[0])
             hasher.update(parts[1])
@@ -336,6 +337,6 @@ class LeapSecondData:
                 raise InvalidHashError("No #h line found")
             digest = hasher.hexdigest()
             if digest != content_hash:
-                raise InvalidHashError(f"Hash didn't match.  Expected {content_hash[:8]}..., " f"got {digest[:8]}...")
+                raise InvalidHashError(f"Hash didn't match.  Expected {content_hash[:8]}..., got {digest[:8]}...")
 
         return LeapSecondData(leap_seconds, valid_until, last_updated)
