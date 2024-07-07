@@ -55,7 +55,7 @@ class State:
 )
 @click.option("--debug/--no-debug", type=bool)
 @click.pass_context
-def cli(ctx: click.Context, url: str, debug: bool) -> None:
+def cli(ctx: click.Context, *, url: str, debug: bool) -> None:
     """Access leap second database information"""
     if debug:  # pragma no cover
         logging.getLogger().setLevel(logging.DEBUG)
@@ -81,7 +81,7 @@ def info(ctx: click.Context) -> None:
 @click.pass_context
 @click.option("--tai/--utc", "is_tai", default=False)
 @click.argument("timestamp", type=UTCDateTime(), default=utcnow(), metavar="TIMESTAMP")
-def offset(ctx: click.Context, is_tai: bool, timestamp: datetime.datetime) -> None:
+def offset(ctx: click.Context, *, is_tai: bool, timestamp: datetime.datetime) -> None:
     """Get the UTC offset for a given moment, in seconds"""
     leap_second_data = ctx.obj
     if is_tai:
@@ -93,7 +93,7 @@ def offset(ctx: click.Context, is_tai: bool, timestamp: datetime.datetime) -> No
 @click.pass_context
 @click.option("--to-tai/--to-utc", default=True)
 @click.argument("timestamp", type=UTCDateTime(), default=None, required=False, metavar="TIMESTAMP")
-def convert(ctx: click.Context, to_tai: bool, timestamp: datetime.datetime | None = None) -> None:
+def convert(ctx: click.Context, *, to_tai: bool, timestamp: datetime.datetime | None = None) -> None:
     """Convert timestamps between TAI and UTC"""
     leap_second_data = ctx.obj
     if to_tai:
@@ -114,7 +114,7 @@ def convert(ctx: click.Context, to_tai: bool, timestamp: datetime.datetime | Non
 @cli.command()
 @click.pass_context
 @click.argument("timestamp", type=UTCDateTime(), default=utcnow(), metavar="TIMESTAMP")
-def next_leapsecond(ctx: click.Context, timestamp: datetime.datetime) -> None:
+def next_leapsecond(ctx: click.Context, *, timestamp: datetime.datetime) -> None:
     """Get the next leap second after a given UTC timestamp"""
     leap_second_data = ctx.obj
     ls = min(
@@ -131,7 +131,7 @@ def next_leapsecond(ctx: click.Context, timestamp: datetime.datetime) -> None:
 @cli.command()
 @click.pass_context
 @click.argument("timestamp", type=UTCDateTime(), default=utcnow(), metavar="TIMESTAMP")
-def previous_leapsecond(ctx: click.Context, timestamp: datetime.datetime) -> None:
+def previous_leapsecond(ctx: click.Context, *, timestamp: datetime.datetime) -> None:
     """Get the last leap second before a given UTC timestamp"""
     leap_second_data = ctx.obj
     ls = max(
@@ -154,7 +154,7 @@ def previous_leapsecond(ctx: click.Context, timestamp: datetime.datetime) -> Non
 )
 @click.argument("end", type=UTCDateTime(), default=utcnow(), metavar="[END-TIMESTAMP]")
 @click.pass_context
-def table(ctx: click.Context, start: datetime.datetime, end: datetime.datetime) -> None:
+def table(ctx: click.Context, *, start: datetime.datetime, end: datetime.datetime) -> None:
     """Print information about leap seconds"""
     leap_second_data = ctx.obj
     for leap_second in leap_second_data.leap_seconds:  # pragma no branch

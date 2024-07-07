@@ -58,7 +58,7 @@ class LeapSecondDataTest(unittest.TestCase):
             leapseconddata.LeapSecondData.from_data,
             "#\n",
         )
-        self.assertIsNotNone(leapseconddata.LeapSecondData.from_data("#h 0 0 0 0 0\n", False))
+        self.assertIsNotNone(leapseconddata.LeapSecondData.from_data("#h 0 0 0 0 0\n", check_hash=False))
 
     def test_invalid(self) -> None:
         valid_until = db.valid_until
@@ -77,7 +77,7 @@ class LeapSecondDataTest(unittest.TestCase):
             ]
         )
         self.assertRaises(leapseconddata.ValidityError, db1.tai_offset, db.valid_until)
-        self.assertEqual(db1.tai_offset(valid_until, False), datetime.timedelta(seconds=1))
+        self.assertEqual(db1.tai_offset(valid_until, check_validity=False), datetime.timedelta(seconds=1))
 
         when = datetime.datetime(1999, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         assert when.tzinfo is not None
@@ -86,7 +86,7 @@ class LeapSecondDataTest(unittest.TestCase):
     def test_empty(self) -> None:
         db1 = leapseconddata.LeapSecondData([])
         self.assertEqual(
-            db1.tai_offset(datetime.datetime(2020, 1, 1), False),
+            db1.tai_offset(datetime.datetime(2020, 1, 1), check_validity=False),
             datetime.timedelta(seconds=0),
         )
 

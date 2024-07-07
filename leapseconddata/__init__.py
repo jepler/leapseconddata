@@ -108,7 +108,7 @@ class LeapSecondData:
             when = when.astimezone(datetime.timezone.utc)
         return when
 
-    def tai_offset(self, when: datetime.datetime, check_validity: bool = True) -> datetime.timedelta:
+    def tai_offset(self, when: datetime.datetime, *, check_validity: bool = True) -> datetime.timedelta:
         """For a given datetime, return the TAI-UTC offset
 
         :param when: Moment in time to find offset for
@@ -140,7 +140,7 @@ class LeapSecondData:
             old_tai = leap_second.tai_offset
         return self.leap_seconds[-1].tai_offset
 
-    def to_tai(self, when: datetime.datetime, check_validity: bool = True) -> datetime.datetime:
+    def to_tai(self, when: datetime.datetime, *, check_validity: bool = True) -> datetime.datetime:
         """Convert the given datetime object to TAI.
 
         :param when: Moment in time to convert.  If naive, it is assumed to be in UTC.
@@ -151,9 +151,9 @@ class LeapSecondData:
         if datetime_is_tai(when):
             return when
         when = self._utc_datetime(when)
-        return (when + self.tai_offset(when, check_validity)).replace(tzinfo=tai)
+        return (when + self.tai_offset(when, check_validity=check_validity)).replace(tzinfo=tai)
 
-    def tai_to_utc(self, when: datetime.datetime, check_validity: bool = True) -> datetime.datetime:
+    def tai_to_utc(self, when: datetime.datetime, *, check_validity: bool = True) -> datetime.datetime:
         """Convert the given datetime object to UTC
 
         For a leap second, the ``fold`` property of the returned time is True.
@@ -165,12 +165,12 @@ class LeapSecondData:
             raise ValueError("Input timestamp is not TAI or naive")
         if when.tzinfo is None:
             when = when.replace(tzinfo=tai)
-        result = (when - self.tai_offset(when, check_validity)).replace(tzinfo=datetime.timezone.utc)
-        if self.is_leap_second(when, check_validity):
+        result = (when - self.tai_offset(when, check_validity=check_validity)).replace(tzinfo=datetime.timezone.utc)
+        if self.is_leap_second(when, check_validity=check_validity):
             result = result.replace(fold=True)
         return result
 
-    def is_leap_second(self, when: datetime.datetime, check_validity: bool = True) -> bool:
+    def is_leap_second(self, when: datetime.datetime, *, check_validity: bool = True) -> bool:
         """Return True if the given timestamp is the leap second.
 
         :param when: Moment in time to check.  If naive, it is assumed to be in UTC.
@@ -182,15 +182,16 @@ class LeapSecondData:
         represented.
         """
         if when.tzinfo is not tai:
-            when = self.to_tai(when, check_validity) + datetime.timedelta(seconds=when.fold)
-        tai_offset1 = self.tai_offset(when, check_validity)
-        tai_offset2 = self.tai_offset(when - datetime.timedelta(seconds=1), check_validity)
+            when = self.to_tai(when, check_validity=check_validity) + datetime.timedelta(seconds=when.fold)
+        tai_offset1 = self.tai_offset(when, check_validity=check_validity)
+        tai_offset2 = self.tai_offset(when - datetime.timedelta(seconds=1), check_validity=check_validity)
         return tai_offset1 != tai_offset2
 
     @classmethod
     def from_standard_source(
         cls,
         when: datetime.datetime | None = None,
+        *,
         check_hash: bool = True,
     ) -> LeapSecondData:
         """Get the list of leap seconds from a standard source.
@@ -210,7 +211,7 @@ class LeapSecondData:
         ]:
             logging.debug("Trying leap second data from %s", location)
             try:
-                candidate = cls.from_url(location, check_hash)
+                candidate = cls.from_url(location, check_hash=check_hash)
             except InvalidHashError:  # pragma no cover
                 logging.warning("Invalid hash while reading %s", location)
                 continue
@@ -227,6 +228,7 @@ class LeapSecondData:
     def from_file(
         cls,
         filename: str = "/usr/share/zoneinfo/leap-seconds.list",
+        *,
         check_hash: bool = True,
     ) -> LeapSecondData:
         """Retrieve the leap second list from a local file.
@@ -236,12 +238,13 @@ class LeapSecondData:
         :param check_hash: Whether to check the embedded hash
         """
         with open(filename, "rb") as open_file:  # pragma no cover
-            return cls.from_open_file(open_file, check_hash)
+            return cls.from_open_file(open_file, check_hash=check_hash)
 
     @classmethod
     def from_url(
         cls,
         url: str = "https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list",
+        *,
         check_hash: bool = True,
     ) -> LeapSecondData | None:
         """Retrieve the leap second list from a local file
@@ -252,7 +255,7 @@ class LeapSecondData:
         """
         try:
             with urllib.request.urlopen(url) as open_file:
-                return cls.from_open_file(open_file, check_hash)
+                return cls.from_open_file(open_file, check_hash=check_hash)
         except urllib.error.URLError:  # pragma no cover
             return None
 
@@ -260,6 +263,7 @@ class LeapSecondData:
     def from_data(
         cls,
         data: bytes | str,
+        *,
         check_hash: bool = True,
     ) -> LeapSecondData:
         """Retrieve the leap second list from local data
@@ -269,7 +273,7 @@ class LeapSecondData:
         """
         if isinstance(data, str):
             data = data.encode("ascii", "replace")
-        return cls.from_open_file(io.BytesIO(data), check_hash)
+        return cls.from_open_file(io.BytesIO(data), check_hash=check_hash)
 
     @staticmethod
     def _parse_content_hash(row: bytes) -> str:
@@ -282,7 +286,7 @@ class LeapSecondData:
         return "".join(f"{i:08x}" for i in hash_parts)
 
     @classmethod
-    def from_open_file(cls, open_file: BinaryIO, check_hash: bool = True) -> LeapSecondData:
+    def from_open_file(cls, open_file: BinaryIO, *, check_hash: bool = True) -> LeapSecondData:
         """Retrieve the leap second list from an open file-like object
 
         :param open_file: Binary IO object containing the leap second list
