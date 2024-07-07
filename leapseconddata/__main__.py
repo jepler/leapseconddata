@@ -20,7 +20,7 @@ utc = datetime.timezone.utc
 
 def utcnow() -> datetime.datetime:
     """Return the current time in UTC, with tzinfo=utc"""
-    return datetime.datetime.utcnow().replace(tzinfo=utc)
+    return datetime.datetime.now(utc)
 
 
 class UTCDateTime(click.DateTime):

@@ -73,8 +73,8 @@ class LeapSecondDataTest(unittest.TestCase):
                 leapseconddata.LeapSecondInfo(
                     datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc),
                     datetime.timedelta(seconds=1),
-                )
-            ]
+                ),
+            ],
         )
         self.assertRaises(leapseconddata.ValidityError, db1.tai_offset, db.valid_until)
         self.assertEqual(db1.tai_offset(valid_until, check_validity=False), datetime.timedelta(seconds=1))
@@ -86,7 +86,7 @@ class LeapSecondDataTest(unittest.TestCase):
     def test_empty(self) -> None:
         db1 = leapseconddata.LeapSecondData([])
         self.assertEqual(
-            db1.tai_offset(datetime.datetime(2020, 1, 1), check_validity=False),
+            db1.tai_offset(datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc), check_validity=False),
             datetime.timedelta(seconds=0),
         )
 
@@ -102,7 +102,7 @@ class LeapSecondDataTest(unittest.TestCase):
         self.assertFalse(db.is_leap_second(when - datetime.timedelta(seconds=1)))
         self.assertFalse(db.is_leap_second(when + datetime.timedelta(seconds=1)))
 
-        when_tai = datetime.datetime(1999, 1, 1, 0, 0, 32)
+        when_tai = datetime.datetime(1999, 1, 1, 0, 0, 32, tzinfo=leapseconddata.tai)
         when_utc = db.tai_to_utc(when_tai)
         self.assertIs(when_utc.tzinfo, datetime.timezone.utc)
         print(when_utc)
