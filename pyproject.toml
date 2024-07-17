@@ -9,9 +9,36 @@ requires = [
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
+[tool.setuptools]
+packages = ["leapseconddata"]
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type="text/markdown"}
 [tool.setuptools_scm]
+write_to = "leapseconddata/__version__.py"
 [tool.ruff]
 line-length=120
 [tool.ruff.lint]
 select = ["E", "F", "D", "I", "N", "UP", "YTT", "BLE", "B", "FBT", "A", "COM", "C4", "DTZ", "FA", "ISC", "ICN", "PIE", "PYI", "Q", "RET", "SIM", "TID", "TCH", "ARG", "PTH", "C", "R", "W", "FLY", "RUF", "PL"]
 ignore = ["D203", "D213", "D400", "D415", "ISC001"]
+[project]
+name = "wwvb"
+authors = [{name = "Jeff Epler", email = "jepler@gmail.com"}]
+description = "Use the list of known and scheduled leap seconds"
+dynamic = ["readme","version"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.9"
+dependencies = ["click"]
+[project.urls]
+Source = "https://github.com/jepler/leapseconddata"
+Documentation = "https://leapseconddata.readthedocs.io/en/latest/"
+[project.scripts]
+leapsecond = "leapseconddata.__main__:cli"
