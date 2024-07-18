@@ -255,6 +255,9 @@ class LeapSecondData:
         Using a list of standard sources, including network sources, find a
         leap-second.list data valid for the given timestamp, or the current
         time (if unspecified)
+
+        If ``custom_sources`` is specified, this list of URLs is checked before
+        the hard-coded sources.
         """
         for location in itertools.chain(custom_sources, cls.standard_file_sources, cls.standard_network_sources):
             logging.debug("Trying leap second data from %s", location)
