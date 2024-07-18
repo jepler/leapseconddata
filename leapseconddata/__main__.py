@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 import click
 
-from . import LeapSecondData, tai
+from . import InvalidHashError, LeapSecondData, tai
 
 utc = datetime.timezone.utc
 
@@ -163,6 +163,30 @@ def table(ctx: click.Context, *, start: datetime.datetime, end: datetime.datetim
         if leap_second.start > end:
             break
         print(f"{leap_second.start:%Y-%m-%d}: {leap_second.tai_offset.total_seconds():.0f}")
+
+
+@cli.command
+def sources() -> None:
+    """Print information about leap-second.list data sources"""
+    first = True
+    for location in LeapSecondData.standard_file_sources + LeapSecondData.standard_network_sources:
+        if not first:
+            print()
+        first = False
+        try:
+            leap_second_data = LeapSecondData.from_url(location, check_hash=True)
+        except InvalidHashError:  # pragma no coverage
+            print(f"{location}: Invalid hash")
+            leap_second_data = LeapSecondData.from_url(location, check_hash=False)
+        except Exception as e:  # pragma no coverage # noqa: BLE001
+            print(f"{location}: {e}")
+            leap_second_data = None
+
+        if leap_second_data is not None:
+            print(f"{location}: Last updated {leap_second_data.last_updated}")
+            print(f"{location}: Valid until {leap_second_data.valid_until}")
+        else:
+            print(f"{location}: Could not be read")
 
 
 if __name__ == "__main__":  # pragma no cover

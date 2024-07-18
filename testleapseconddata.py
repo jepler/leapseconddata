@@ -41,6 +41,7 @@ class LeapSecondDataTest(unittest.TestCase):
         self.run_main("next-leapsecond", "2100-2-2")
         self.run_main("previous-leapsecond", "2009-2-2")
         self.run_main("previous-leapsecond", "1960-2-2")
+        self.run_main("sources")
 
     def test_corrupt(self) -> None:
         self.assertRaises(

@@ -67,7 +67,7 @@ jobs:
       run: make mypy
 
     - name: Test
-      run: python -mcoverage run --branch -m unittest testleapseconddata.py && python -mcoverage report --fail-under=100 && python -mcoverage xml
+      run: python -X tracemalloc=3 -mcoverage run --branch -m unittest testleapseconddata.py && python -mcoverage report --fail-under=100 && python -mcoverage xml
 
   pre-commit:
     runs-on: ubuntu-latest
