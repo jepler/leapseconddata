@@ -25,12 +25,16 @@ from __future__ import annotations
 import datetime
 import hashlib
 import io
+import itertools
 import logging
 import pathlib
 import re
 import urllib.request
 from dataclasses import dataclass, field
-from typing import BinaryIO, ClassVar
+from typing import TYPE_CHECKING, BinaryIO, ClassVar
+
+if TYPE_CHECKING:  # pragma no cover
+    from collections.abc import Sequence
 
 tai = datetime.timezone(datetime.timedelta(0), "TAI")
 
@@ -56,6 +60,10 @@ class ValidityError(ValueError):
 
 class InvalidHashError(ValueError):
     """The file hash could not be verified"""
+
+
+class InvalidContentError(ValueError):
+    """A line in the file was not valid"""
 
 
 def _from_ntp_epoch(value: int) -> datetime.datetime:
@@ -237,6 +245,7 @@ class LeapSecondData:
         when: datetime.datetime | None = None,
         *,
         check_hash: bool = True,
+        custom_sources: Sequence[str] = (),
     ) -> LeapSecondData:
         """Get the list of leap seconds from a standard source.
 
@@ -246,22 +255,28 @@ class LeapSecondData:
         Using a list of standard sources, including network sources, find a
         leap-second.list data valid for the given timestamp, or the current
         time (if unspecified)
+
+        If ``custom_sources`` is specified, this list of URLs is checked before
+        the hard-coded sources.
         """
-        for location in cls.standard_file_sources + cls.standard_network_sources:
+        for location in itertools.chain(custom_sources, cls.standard_file_sources, cls.standard_network_sources):
             logging.debug("Trying leap second data from %s", location)
             try:
                 candidate = cls.from_url(location, check_hash=check_hash)
-            except InvalidHashError:  # pragma no cover
+            except InvalidHashError:
                 logging.warning("Invalid hash while reading %s", location)
                 continue
-            if candidate is None:  # pragma no cover
+            except InvalidContentError as e:
+                logging.warning("Invalid content while reading %s: %s", location, e)
                 continue
-            if candidate.valid(when):  # pragma no branch
+            if candidate is None:
+                continue
+            if candidate.valid(when):
                 logging.info("Using leap second data from %s", location)
                 return candidate
-            logging.warning("Validity expired for %s", location)  # pragma no cover
+            logging.warning("Validity expired for %s", location)
 
-        raise ValidityError("No valid leap-second.list file could be found")  # pragma no cover
+        raise ValidityError("No valid leap-second.list file could be found")
 
     @classmethod
     def from_file(
@@ -338,36 +353,39 @@ class LeapSecondData:
 
         hasher = hashlib.sha1()
 
-        for row in open_file:
-            row = row.strip()  # noqa: PLW2901
-            if row.startswith(b"#h"):
-                content_hash = cls._parse_content_hash(row)
-                continue
+        for row_ws in open_file:
+            row = row_ws.strip()
+            try:
+                if row.startswith(b"#h"):
+                    content_hash = cls._parse_content_hash(row)
+                    continue
 
-            if row.startswith(b"#@"):
+                if row.startswith(b"#@"):
+                    parts = row.split()
+                    hasher.update(parts[1])
+                    valid_until = _from_ntp_epoch(int(parts[1]))
+                    continue
+
+                if row.startswith(b"#$"):
+                    parts = row.split()
+                    hasher.update(parts[1])
+                    last_updated = _from_ntp_epoch(int(parts[1]))
+                    continue
+
+                row = row.split(b"#")[0].strip()
+                content_to_hash.extend(re.findall(rb"\d+", row))
+
                 parts = row.split()
+                if len(parts) != 2:  # noqa: PLR2004
+                    continue
+                hasher.update(parts[0])
                 hasher.update(parts[1])
-                valid_until = _from_ntp_epoch(int(parts[1]))
-                continue
 
-            if row.startswith(b"#$"):
-                parts = row.split()
-                hasher.update(parts[1])
-                last_updated = _from_ntp_epoch(int(parts[1]))
-                continue
-
-            row = row.split(b"#")[0].strip()  # noqa: PLW2901
-            content_to_hash.extend(re.findall(rb"\d+", row))
-
-            parts = row.split()
-            if len(parts) != 2:  # noqa: PLR2004
-                continue
-            hasher.update(parts[0])
-            hasher.update(parts[1])
-
-            when = _from_ntp_epoch(int(parts[0]))
-            tai_offset = datetime.timedelta(seconds=int(parts[1]))
-            leap_seconds.append(LeapSecondInfo(when, tai_offset))
+                when = _from_ntp_epoch(int(parts[0]))
+                tai_offset = datetime.timedelta(seconds=int(parts[1]))
+                leap_seconds.append(LeapSecondInfo(when, tai_offset))
+            except Exception as e:
+                raise InvalidContentError(f"Failed to parse: {row!r}: {e}") from e
 
         if check_hash:
             if content_hash is None:

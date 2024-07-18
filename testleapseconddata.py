@@ -91,6 +91,18 @@ class LeapSecondDataTest(unittest.TestCase):
             datetime.timedelta(seconds=0),
         )
 
+    def test_invalid2(self) -> None:
+        when = datetime.datetime(datetime.MAXYEAR, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
+        with self.assertRaises(leapseconddata.ValidityError):
+            leapseconddata.LeapSecondData.from_standard_source(
+                when,
+                custom_sources=[
+                    "data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==",
+                    "data:text/plain,%23h%099dac5845%208acd32c0%202947d462%20daf4a943%20f58d9391%0A",
+                    "file:///doesnotexist",
+                ],
+            )
+
     def test_tz(self) -> None:
         when = datetime.datetime(1999, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         when = when.replace(fold=True)
