@@ -17,7 +17,6 @@ For example, to retrieve the UTC-TAI offset on January 1, 2011:
     >>> when = datetime.datetime(2011, 1, 1, tzinfo=datetime.timezone.utc)
     >>> ls.tai_offset(when).total_seconds()
     34.0
-
 """
 
 from __future__ import annotations
