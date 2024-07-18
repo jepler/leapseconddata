@@ -288,8 +288,7 @@ class LeapSecondData:
     ) -> LeapSecondData | None:
         """Retrieve the leap second list from a local file
 
-        :param filename: URL to read leap second data from.  The
-            default is maintained by the tzdata authors
+        :param filename: URL to read leap second data from
         :param check_hash: Whether to check the embedded hash
         """
         try:
