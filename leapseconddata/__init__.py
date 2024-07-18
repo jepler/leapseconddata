@@ -30,7 +30,7 @@ import pathlib
 import re
 import urllib.request
 from dataclasses import dataclass, field
-from typing import BinaryIO
+from typing import BinaryIO, ClassVar
 
 tai = datetime.timezone(datetime.timedelta(0), "TAI")
 
@@ -75,6 +75,49 @@ class LeapSecondData:
     :param Optional[datetime.datetime] valid_until: The expiration of the data
     :param Optional[datetime.datetime] updated: The last update time of the data
     """
+
+    standard_file_sources: ClassVar[list[str]] = [
+        "file:///usr/share/zoneinfo/leap-seconds.list",  # Debian Linux
+        "file:///var/db/ntpd.leap-seconds.list",  # FreeBSD
+    ]
+    """When using `LeapSecondData.from_standard_source`, these local sources are checked first.
+
+    Locations for Debian Linux & FreeBSD are supported."""
+
+    standard_network_sources: ClassVar[list[str]] = [
+        "https://hpiers.obspm.fr/iers/bul/bulc/ntp/leap-seconds.list",
+        "https://data.iana.org/time-zones/tzdb/leap-seconds.list",
+        "https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list",
+        "ftp://ftp.boulder.nist.gov/pub/time/leap-seconds.list",
+        "https://www.meinberg.de/download/ntp/leap-seconds.list",
+    ]
+    """When using `LeapSecondData.from_standard_source`, these network sources are checked second.
+
+    Remote sources are checked in the following order until a suitable file is found:
+
+     * The `International Earth Rotation Service (IERS)
+       <https://www.iers.org/IERS/EN/Home/home_node.html>`_ is the international
+       body charged with various duties including scheduling leap seconds.
+     * The `Internet Assigned Numbers Authority (IANA)
+       <https://www.iana.org/>`_ publishes the IANA timezone database, used by
+       many major operating sytsems for handling the world's time zones. As part
+       of this activity they publish a version of the leap second list.
+     * `eggert/tz <https://github.com/eggert/tz>`_ is the canonical github home
+       of the IANA timezone database, and updated versions of the leap second
+       list can appear here before they are part of an official IANA timezone
+       database release.
+     * `The National Institute of Standards and Technology (NIST)'s Time
+       Realization and Distribution Group
+       <https://www.nist.gov/pml/time-and-frequency-division/time-distribution/internet-time-service-its>`_
+       is a US federal organization that publishes a version of the leap second
+       database.
+     * `Meinberg Funkuhren GmbH & Co. KG
+       <https://www.meinbergglobal.com/english/company/>`_ is a Germany-based
+       company that published a `helpful article in its knowledge base
+       <https://kb.meinbergglobal.com/kb/time_sync/ntp/configuration/ntp_leap_second_file>`_
+       including URLs of sites that disseminate the leap second list. They state
+       that the version they distribute is frequently more up to date than other
+       sources, including IANA, NIST, and tzdb."""
 
     leap_seconds: list[LeapSecondInfo]
     """All known and scheduled leap seconds"""
@@ -204,12 +247,7 @@ class LeapSecondData:
         leap-second.list data valid for the given timestamp, or the current
         time (if unspecified)
         """
-        for location in [  # pragma no branch
-            "file:///usr/share/zoneinfo/leap-seconds.list",  # Debian Linux
-            "file:///var/db/ntpd.leap-seconds.list",  # FreeBSD
-            "https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list",
-            "https://www.meinberg.de/download/ntp/leap-seconds.list",
-        ]:
+        for location in cls.standard_file_sources + cls.standard_network_sources:
             logging.debug("Trying leap second data from %s", location)
             try:
                 candidate = cls.from_url(location, check_hash=check_hash)
@@ -244,7 +282,7 @@ class LeapSecondData:
     @classmethod
     def from_url(
         cls,
-        url: str = "https://raw.githubusercontent.com/eggert/tz/main/leap-seconds.list",
+        url: str,
         *,
         check_hash: bool = True,
     ) -> LeapSecondData | None:
