@@ -92,7 +92,7 @@ class LeapSecondDataTest(unittest.TestCase):
         )
 
     def test_invalid2(self) -> None:
-        when = datetime.datetime(9999, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
+        when = datetime.datetime(datetime.MAXYEAR, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         with self.assertRaises(leapseconddata.ValidityError):
             leapseconddata.LeapSecondData.from_standard_source(
                 when,
