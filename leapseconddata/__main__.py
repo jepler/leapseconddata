@@ -168,17 +168,17 @@ def table(ctx: click.Context, *, start: datetime.datetime, end: datetime.datetim
 @cli.command
 def sources() -> None:
     """Print information about leap-second.list data sources"""
-    first = False
+    first = True
     for location in LeapSecondData.standard_file_sources + LeapSecondData.standard_network_sources:
         if not first:
             print()
         first = False
         try:
             leap_second_data = LeapSecondData.from_url(location, check_hash=True)
-        except InvalidHashError:
+        except InvalidHashError:  # pragma no coverage
             print(f"{location}: Invalid hash")
             leap_second_data = LeapSecondData.from_url(location, check_hash=False)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:  # pragma no coverage # noqa: BLE001
             print(f"{location}: {e}")
             leap_second_data = None
 
