@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 from leapseconddata import LeapSecondData
 
-my_date = date(2015, 12, 31)
+my_date = date(2016, 12, 31)
 data = LeapSecondData.from_standard_source()
 
 for leap in data.leap_seconds:
