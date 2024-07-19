@@ -17,6 +17,7 @@ import sys
 import pathlib
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+sys.path.append(str(pathlib.Path(__file__).parent / "_ext"))
 
 # Define the canonical URL if you are using a custom domain on Read the Docs
 html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "")
@@ -29,7 +30,7 @@ if os.environ.get("READTHEDOCS", "") == "True":
 # -- Project information -----------------------------------------------------
 
 project = 'leapseconddata'
-copyright = '2021, Jeff Epler'
+copyright = '2021-2024, Jeff Epler'
 author = 'Jeff Epler'
 
 # The full version, including alpha/beta/rc tags
@@ -43,6 +44,9 @@ release = '1.1.0'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
+    'custom_autodoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -51,7 +55,10 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '_env']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '_env', '.license']
+
+# Show the contents of todo directives.
+todo_include_todos = True
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -66,8 +73,22 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+}
+
 autodoc_typehints = "description"
+autodoc_typehints_format = "short"
 autodoc_class_signature = "separated"
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "inherited-members": False,
+    "special-members": False,
+    "exclude-members": "__init__",
+    "show-inheritance": True,
+}
+autodoc_member_order = "bysource"
 
 # SPDX-FileCopyrightText: 2021 Jeff Epler
 #

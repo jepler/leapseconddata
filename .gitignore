@@ -12,3 +12,5 @@ __pycache__
 *,cover
 /.reuse
 __version__.py
+/docs/_build
+/.idea
