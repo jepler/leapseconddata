@@ -40,3 +40,8 @@ def setup(app: Sphinx) -> None:
         "autodoc-process-docstring",
         remove_first_line_in_module_docstring,
     )
+
+    return {
+        "parallel_read_safe": True,
+        "parallel_write_safe": True,
+    }
