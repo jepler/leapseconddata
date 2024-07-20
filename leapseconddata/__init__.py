@@ -29,6 +29,7 @@ import logging
 import pathlib
 import re
 import urllib.request
+import warnings
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, BinaryIO, ClassVar
 
@@ -156,6 +157,7 @@ class LeapSecondData:
     @staticmethod
     def _utc_datetime(when: datetime.datetime) -> datetime.datetime:
         if when.tzinfo is None:
+            warnings.warn("Use of naive datetime objects is deprecated", DeprecationWarning, stacklevel=2)
             when = when.replace(tzinfo=datetime.timezone.utc)
         elif when.tzinfo is not datetime.timezone.utc:
             when = when.astimezone(datetime.timezone.utc)
@@ -196,14 +198,18 @@ class LeapSecondData:
     def to_tai(self, when: datetime.datetime, *, check_validity: bool = True) -> datetime.datetime:
         """Convert the given datetime object to TAI.
 
-        :param when: Moment in time to convert.  If naive, it is assumed to be in UTC.
-        :param check_validity: Check whether the database is valid for the given moment
+        A TAI timestamp is returned unchanged.
 
-        Naive timestamps are assumed to be UTC.  A TAI timestamp is returned unchanged.
+        A naive timestamp is assumed to be UTC. This behavior is deprecated, and a future
+        release will raise an exception when ``when`` is naive.
+
+        :param when: Moment in time to convert.
+        :param check_validity: Check whether the database is valid for the given moment
         """
         if datetime_is_tai(when):
             return when
         when = self._utc_datetime(when)
+        assert when.tzinfo is not None
         return (when + self.tai_offset(when, check_validity=check_validity)).replace(tzinfo=tai)
 
     def tai_to_utc(self, when: datetime.datetime, *, check_validity: bool = True) -> datetime.datetime:
@@ -211,12 +217,16 @@ class LeapSecondData:
 
         For a leap second, the ``fold`` property of the returned time is True.
 
-        :param when: Moment in time to convert.  If not naive, its ``tzinfo`` must be `tai`.
+        A naive timestamp is assumed to be TAI. This behavior is deprecated, and a future
+        release will raise an exception when ``when`` is naive.
+
+        :param when: Moment in time to convert.  Its ``tzinfo`` must be `tai`.
         :param check_validity: Check whether the database is valid for the given moment
         """
         if when.tzinfo is not None and when.tzinfo is not tai:
             raise ValueError("Input timestamp is not TAI or naive")
         if when.tzinfo is None:
+            warnings.warn("Use of naive datetime objects is deprecated", DeprecationWarning, stacklevel=1)
             when = when.replace(tzinfo=tai)
         result = (when - self.tai_offset(when, check_validity=check_validity)).replace(tzinfo=datetime.timezone.utc)
         if self.is_leap_second(when, check_validity=check_validity):
@@ -226,7 +236,10 @@ class LeapSecondData:
     def is_leap_second(self, when: datetime.datetime, *, check_validity: bool = True) -> bool:
         """Return True if the given timestamp is the leap second.
 
-        :param when: Moment in time to check.  If naive, it is assumed to be in UTC.
+        A naive timestamp is assumed to be UTC. This behavior is deprecated, and a future
+        release will raise an exception when ``when`` is naive.
+
+        :param when: Moment in time to check.
         :param check_validity: Check whether the database is valid for the given moment
 
         For a TAI timestamp, it returns True for the leap second (the one that
