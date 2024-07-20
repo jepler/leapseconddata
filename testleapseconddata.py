@@ -136,13 +136,13 @@ class LeapSecondDataTest(unittest.TestCase):
         assert when_tai.tzinfo is leapseconddata.tai
         assert when_tai2.tzinfo is leapseconddata.tai
 
-    def assertPrints(self, code, expected):  # noqa: N802
+    def assertPrints(self, code: str, expected: str) -> None:  # noqa: N802
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             exec(code, {}, {})
         self.assertEqual(expected, buf.getvalue())
 
-    def test_doc(self):
+    def test_doc(self) -> None:
         docs = pathlib.Path(__file__).parent / "docs"
         for expected in docs.rglob("**/*.py.exp"):
             py = expected.with_suffix("")  # Pop off the ".exp" suffix
