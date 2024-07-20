@@ -155,7 +155,9 @@ class LeapSecondData:
 
     @staticmethod
     def _utc_datetime(when: datetime.datetime) -> datetime.datetime:
-        if when.tzinfo is not None and when.tzinfo is not datetime.timezone.utc:
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=datetime.timezone.utc)
+        elif when.tzinfo is not datetime.timezone.utc:
             when = when.astimezone(datetime.timezone.utc)
         return when
 
