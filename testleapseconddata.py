@@ -136,6 +136,13 @@ class LeapSecondDataTest(unittest.TestCase):
         assert when_tai.tzinfo is leapseconddata.tai
         assert when_tai2.tzinfo is leapseconddata.tai
 
+    def test_to_tai_naive(self) -> None:
+        when = datetime.datetime(1999, 1, 1, tzinfo=None) - datetime.timedelta(seconds=1)  # noqa: DTZ001
+        when_tai = db.to_tai(when)
+        when2 = datetime.datetime(1999, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
+        when_tai2 = db.to_tai(when2)
+        self.assertEqual(when_tai, when_tai2)
+
     def assertPrints(self, code: str, expected: str) -> None:  # noqa: N802
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
