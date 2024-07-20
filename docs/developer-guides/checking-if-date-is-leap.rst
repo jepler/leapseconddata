@@ -16,6 +16,4 @@ second, you can use the following code:
 
 The output of this program is the following:
 
-.. code-block:: text
-
-    2016-12-31 has a leap second!
+.. literalinclude:: check-date-leap.py.exp

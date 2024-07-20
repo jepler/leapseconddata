@@ -9,8 +9,10 @@
 
 """Test most leapseconddata functionality"""
 
-# pylint: disable=missing-class-docstring,missing-function-docstring
+import contextlib
 import datetime
+import io
+import pathlib
 import unittest
 
 import leapseconddata
@@ -23,10 +25,12 @@ GMT1 = datetime.timezone(datetime.timedelta(seconds=3600), "GMT1")
 
 class LeapSecondDataTest(unittest.TestCase):
     def run_main(self, *args: str) -> None:
-        try:
-            leapseconddata.__main__.cli(args)
-        except SystemExit as e:
-            self.assertEqual(e.code, 0)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            try:
+                leapseconddata.__main__.cli(args)
+            except SystemExit as e:
+                self.assertEqual(e.code, 0)
 
     def test_main(self) -> None:
         self.run_main("info")
@@ -131,6 +135,18 @@ class LeapSecondDataTest(unittest.TestCase):
         assert when_tai == when_tai2
         assert when_tai.tzinfo is leapseconddata.tai
         assert when_tai2.tzinfo is leapseconddata.tai
+
+    def assertPrints(self, code: str, expected: str) -> None:  # noqa: N802
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            exec(code, {}, {})
+        self.assertEqual(expected, buf.getvalue())
+
+    def test_doc(self) -> None:
+        docs = pathlib.Path(__file__).parent / "docs"
+        for expected in docs.rglob("**/*.py.exp"):
+            py = expected.with_suffix("")  # Pop off the ".exp" suffix
+            self.assertPrints(py.read_text(encoding="utf-8"), expected.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":  # pragma: no cover

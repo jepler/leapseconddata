@@ -17,6 +17,4 @@ For example:
 
 This program will provide you with the following output:
 
-.. code-block:: text
-
-    2024-07-18T22:00:00g+00:00
+.. literalinclude:: convert-tai-to-utc.py.exp
