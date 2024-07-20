@@ -15,6 +15,7 @@
 import os
 import sys
 import pathlib
+import subprocess
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 sys.path.append(str(pathlib.Path(__file__).parent / "_ext"))
@@ -34,7 +35,7 @@ copyright = '2021-2024, Jeff Epler'
 author = 'Jeff Epler'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1.0'
+version = release = subprocess.check_output(["python", "-m", "setuptools_scm"], cwd="..", encoding="ascii").strip()
 
 
 # -- General configuration ---------------------------------------------------
