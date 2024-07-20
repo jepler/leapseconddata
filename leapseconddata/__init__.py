@@ -71,7 +71,7 @@ def _from_ntp_epoch(value: int) -> datetime.datetime:
 
 def datetime_is_tai(when: datetime.datetime) -> bool:
     """Return true if the datetime is in the TAI timescale"""
-    return when.tzname() == "TAI"
+    return when.tzinfo is tai
 
 
 @dataclass(frozen=True)
