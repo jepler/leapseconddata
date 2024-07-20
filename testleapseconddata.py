@@ -25,10 +25,12 @@ GMT1 = datetime.timezone(datetime.timedelta(seconds=3600), "GMT1")
 
 class LeapSecondDataTest(unittest.TestCase):
     def run_main(self, *args: str) -> None:
-        try:
-            leapseconddata.__main__.cli(args)
-        except SystemExit as e:
-            self.assertEqual(e.code, 0)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            try:
+                leapseconddata.__main__.cli(args)
+            except SystemExit as e:
+                self.assertEqual(e.code, 0)
 
     def test_main(self) -> None:
         self.run_main("info")
