@@ -9,8 +9,10 @@
 
 """Test most leapseconddata functionality"""
 
-# pylint: disable=missing-class-docstring,missing-function-docstring
+import contextlib
 import datetime
+import io
+import pathlib
 import unittest
 
 import leapseconddata
@@ -131,6 +133,18 @@ class LeapSecondDataTest(unittest.TestCase):
         assert when_tai == when_tai2
         assert when_tai.tzinfo is leapseconddata.tai
         assert when_tai2.tzinfo is leapseconddata.tai
+
+    def assertPrints(self, code, expected):  # noqa: N802
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            exec(code, {}, {})
+        self.assertEqual(expected, buf.getvalue())
+
+    def test_doc(self):
+        docs = pathlib.Path(__file__).parent / "docs"
+        for expected in docs.rglob("**/*.py.exp"):
+            py = expected.with_suffix("")  # Pop off the ".exp" suffix
+            self.assertPrints(py.read_text(encoding="utf-8"), expected.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":  # pragma: no cover
