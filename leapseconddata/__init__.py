@@ -260,6 +260,7 @@ class LeapSecondData:
         *,
         check_hash: bool = True,
         custom_sources: Sequence[str] = (),
+        timeout: float | None = 60,
     ) -> LeapSecondData:
         """Get the list of leap seconds from a standard source.
 
@@ -276,7 +277,7 @@ class LeapSecondData:
         for location in itertools.chain(custom_sources, cls.standard_file_sources, cls.standard_network_sources):
             logging.debug("Trying leap second data from %s", location)
             try:
-                candidate = cls.from_url(location, check_hash=check_hash)
+                candidate = cls.from_url(location, check_hash=check_hash, timeout=timeout)
             except InvalidHashError:
                 logging.warning("Invalid hash while reading %s", location)
                 continue
@@ -288,7 +289,7 @@ class LeapSecondData:
             if candidate.valid(when):
                 logging.info("Using leap second data from %s", location)
                 return candidate
-            logging.warning("Validity expired for %s", location)
+            logging.warning(f"Validity expired for {location} at {candidate.valid_until} (checking validity at {when})")
 
         raise ValidityError("No valid leap-second.list file could be found")
 
@@ -314,6 +315,7 @@ class LeapSecondData:
         url: str,
         *,
         check_hash: bool = True,
+        timeout: float | None = 60,
     ) -> LeapSecondData | None:
         """Retrieve the leap second list from a local file
 
@@ -321,7 +323,7 @@ class LeapSecondData:
         :param check_hash: Whether to check the embedded hash
         """
         try:
-            with urllib.request.urlopen(url) as open_file:
+            with urllib.request.urlopen(url, timeout=timeout) as open_file:
                 return cls.from_open_file(open_file, check_hash=check_hash)
         except urllib.error.URLError:  # pragma no cover
             return None

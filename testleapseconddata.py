@@ -18,9 +18,15 @@ import unittest
 import leapseconddata
 import leapseconddata.__main__
 
-db = leapseconddata.LeapSecondData.from_standard_source()
+db = leapseconddata.LeapSecondData.from_standard_source(timeout=8)
 
 GMT1 = datetime.timezone(datetime.timedelta(seconds=3600), "GMT1")
+
+bad_sources = [
+    "data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==",
+    "data:text/plain,%23h%099dac5845%208acd32c0%202947d462%20daf4a943%20f58d9391%0A",
+    "file:///doesnotexist",
+]
 
 
 class LeapSecondDataTest(unittest.TestCase):
@@ -45,7 +51,8 @@ class LeapSecondDataTest(unittest.TestCase):
         self.run_main("next-leapsecond", "2100-2-2")
         self.run_main("previous-leapsecond", "2009-2-2")
         self.run_main("previous-leapsecond", "1960-2-2")
-        self.run_main("sources")
+        self.run_main("sources", "--timeout", "8")
+        self.run_main("sources", *bad_sources)
 
     def test_corrupt(self) -> None:
         self.assertRaises(
@@ -98,14 +105,7 @@ class LeapSecondDataTest(unittest.TestCase):
     def test_invalid2(self) -> None:
         when = datetime.datetime(datetime.MAXYEAR, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)
         with self.assertRaises(leapseconddata.ValidityError):
-            leapseconddata.LeapSecondData.from_standard_source(
-                when,
-                custom_sources=[
-                    "data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==",
-                    "data:text/plain,%23h%099dac5845%208acd32c0%202947d462%20daf4a943%20f58d9391%0A",
-                    "file:///doesnotexist",
-                ],
-            )
+            leapseconddata.LeapSecondData.from_standard_source(when, custom_sources=bad_sources, timeout=8)
 
     def test_tz(self) -> None:
         when = datetime.datetime(1999, 1, 1, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=1)

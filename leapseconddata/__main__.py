@@ -166,27 +166,36 @@ def table(ctx: click.Context, *, start: datetime.datetime, end: datetime.datetim
 
 
 @cli.command
-def sources() -> None:
-    """Print information about leap-second.list data sources"""
+@click.option("--timeout", type=float, default=12, metavar="[SECS]")
+@click.argument("urls", type=str, nargs=-1)
+def sources(*, timeout: float, urls: list[str]) -> None:
+    """Print information about leap-second.list data sources
+
+    If no URLs are specified, print information about all standard sources.
+    If one or more URLs are specified, check them instead.
+    """
     first = True
-    for location in LeapSecondData.standard_file_sources + LeapSecondData.standard_network_sources:
+    locations = urls if urls else LeapSecondData.standard_file_sources + LeapSecondData.standard_network_sources
+    for location in locations:
         if not first:
             print()
         first = False
+        print(f"{location}:")
         try:
-            leap_second_data = LeapSecondData.from_url(location, check_hash=True)
-        except InvalidHashError:  # pragma no coverage
-            print(f"{location}: Invalid hash")
-            leap_second_data = LeapSecondData.from_url(location, check_hash=False)
-        except Exception as e:  # pragma no coverage # noqa: BLE001
-            print(f"{location}: {e}")
+            leap_second_data = LeapSecondData.from_url(location, check_hash=True, timeout=timeout)
+        except InvalidHashError as e:
+            print(f"    {e}")
+            leap_second_data = LeapSecondData.from_url(location, check_hash=False, timeout=timeout)
+        except Exception as e:  # noqa: BLE001
+            print(f"    {e}")
             leap_second_data = None
 
         if leap_second_data is not None:
-            print(f"{location}: Last updated {leap_second_data.last_updated}")
-            print(f"{location}: Valid until {leap_second_data.valid_until}")
+            print(f"    Last updated {leap_second_data.last_updated}")
+            print(f"    Valid until {leap_second_data.valid_until}")
+            print(f"    {len(leap_second_data.leap_seconds)} leap seconds")
         else:
-            print(f"{location}: Could not be read")
+            print("    Could not be read")
 
 
 if __name__ == "__main__":  # pragma no cover
