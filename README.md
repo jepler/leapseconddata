@@ -7,6 +7,10 @@ SPDX-License-Identifier: GPL-3.0-only
 [![PyPI](https://img.shields.io/pypi/v/leapseconddata)](https://pypi.org/project/leapseconddata)
 [![Documentation Status](https://readthedocs.org/projects/leapseconddata/badge/?version=latest)](https://leapseconddata.readthedocs.io/en/latest/?badge=latest)
 
+# Intent to move to codeberg
+
+If a new release of leapseconddata is needed, for instance because of a new leap second or in order to support new Python versions, the project will continue at codeberg.org rather than github.
+
 # Python Leap Second List
 
 Leap seconds are corrections applied irregularly so that the UTC day stays
